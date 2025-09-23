@@ -1,11 +1,12 @@
 # AI Cybersecurity Tool
 
-End-to-end ML pipeline for network threat detection using CICIDS2017.
+End-to-end ML pipeline for network threat detection using CICIDS2017 with real-time dashboard.
 
 ## Features
-- Week 1: Baseline pipeline (RandomForest), preprocessing, artifacts saved to `data/processed/` and `models/`
-- Week 2: Supervised (XGBoost), anomaly detection (IsolationForest), ensemble combiner, comprehensive evaluation, performance monitoring
-- Week 3: Flask API + SocketIO with real-time alerts, batch processing endpoint
+- **Week 1**: Baseline pipeline (RandomForest), preprocessing, artifacts saved to `data/processed/` and `models/`
+- **Week 2**: Supervised (XGBoost), anomaly detection (IsolationForest), ensemble combiner, comprehensive evaluation, performance monitoring
+- **Week 3**: Flask API + SocketIO with real-time alerts, batch processing endpoint
+- **Week 4**: Complete React dashboard with real-time threat monitoring, interactive charts, and live system health tracking
 
 ## Setup
 ```bash
@@ -42,11 +43,15 @@ Start server:
 source venv/bin/activate
 python api/app.py
 ```
+**Server runs on port 5001** (avoiding macOS Control Center conflict on 5000)
+
 Endpoints:
 - `GET /health` – health check
 - `POST /predict` – single prediction; JSON { features: { ... } }
 - `POST /batch/predict` – batch predictions; JSON { logs: [ { ... }, ... ] }
-- `GET /stats`, `GET /alerts`, `GET /system/info`
+- `GET /stats` – threat statistics and history
+- `GET /alerts` – recent security alerts
+- `GET /system/info` – system performance metrics
 
 Requirements:
 - Expects models/artifacts in `models/`:
@@ -56,6 +61,41 @@ Requirements:
 
 WebSocket:
 - Socket.IO event `new_alert` emitted for High/Critical detections.
+
+## Dashboard (Week 4)
+Start React dashboard:
+```bash
+cd frontend/cybersecurity-dashboard
+npm install
+npm start
+```
+**Dashboard runs on port 3000**
+
+Features:
+- **Real-time threat monitoring** with live updates via WebSocket
+- **Interactive charts** for threat scores and distribution
+- **System health monitoring** with CPU/memory usage
+- **Alert system** with threat level classification (None, Low, Medium, High, Critical)
+- **Material-UI components** for modern, responsive interface
+
+### Testing the System
+1. Start both servers (API on 5001, Dashboard on 3000)
+2. Visit `http://localhost:3000` for the dashboard
+3. Test API with realistic network features:
+```bash
+curl -X POST http://localhost:5001/predict \
+  -H "Content-Type: application/json" \
+  -d '{
+    "features": {
+      "Destination Port": 80,
+      "Flow Duration": 1000000,
+      "Total Fwd Packets": 10000,
+      "Total Backward Packets": 10000,
+      "source_ip": "192.168.1.100",
+      "attack_type": "DDoS_Test"
+    }
+  }'
+```
 
 ## Development
 - Tests: `pytest`

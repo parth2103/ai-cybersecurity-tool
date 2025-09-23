@@ -10,7 +10,7 @@ import {
   CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell
 } from 'recharts';
 
-const API_URL = 'http://localhost:5000';
+const API_URL = 'http://localhost:5001';
 const socket = io(API_URL);
 
 const Dashboard = () => {

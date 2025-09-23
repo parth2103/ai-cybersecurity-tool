@@ -12,8 +12,6 @@ from pathlib import Path
 app = Flask(__name__)
 CORS(app)
 socketio = SocketIO(app, cors_allowed_origins="*")
-from api.batch_processor import batch_bp
-app.register_blueprint(batch_bp)
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -257,4 +255,4 @@ def handle_disconnect():
     logger.info('Client disconnected')
 
 if __name__ == '__main__':
-    socketio.run(app, debug=True, port=5000)
+    socketio.run(app, debug=True, port=5001, allow_unsafe_werkzeug=True)
