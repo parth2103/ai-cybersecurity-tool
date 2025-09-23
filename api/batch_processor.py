@@ -2,24 +2,26 @@ from flask import Blueprint, request, jsonify
 import pandas as pd
 import numpy as np
 from concurrent.futures import ThreadPoolExecutor
-from .app import models, scaler, selected_features
+
+# Reuse objects from main app
+try:
+    from .app import models, scaler, selected_features
+except ImportError:
+    from app import models, scaler, selected_features
 
 batch_bp = Blueprint('batch', __name__)
 
-# Thread pool for future async work (not strictly necessary now)
 executor = ThreadPoolExecutor(max_workers=4)
 
 
 def preprocess_batch(df: pd.DataFrame) -> np.ndarray:
-    # Ensure all required features exist
-    for feature in selected_features:
-        if feature not in df.columns:
-            df[feature] = 0
-    # Select and order
+    """Align columns to selected_features and apply scaler if available."""
     if selected_features:
+        for feature in selected_features:
+            if feature not in df.columns:
+                df[feature] = 0
         df = df[selected_features]
     X = df.values
-    # Scale if scaler is available
     if scaler is not None:
         X = scaler.transform(df)
     return X
@@ -41,32 +43,28 @@ def batch_predict():
         # Preprocess all at once
         X = preprocess_batch(df)
         
-        # Use RF if available, otherwise first available model with predict_proba/predict
-        model = models.get('rf')
-        if model is None:
-            # fallback: pick first model
-            model = next(iter(models.values()))
+        # Pick a default model (rf) if available
+        if 'rf' not in models:
+            return jsonify({'error': 'RF model not loaded'}), 503
+        model = models['rf']
         
-        # Get predictions
-        has_proba = hasattr(model, 'predict_proba')
+        # Get predictions (use executor.map if heavy)
         predictions = model.predict(X)
-        probabilities = model.predict_proba(X) if has_proba else None
+        probabilities = None
+        if hasattr(model, 'predict_proba'):
+            probabilities = model.predict_proba(X)
         
         results = []
-        for i in range(len(df)):
-            if has_proba:
-                prob = probabilities[i, 1] if probabilities.shape[1] > 1 else probabilities[i, 0]
-                threat_score = float(prob)
-                threat_detected = bool(predictions[i])
+        for i in range(len(predictions)):
+            pred = predictions[i]
+            if probabilities is not None:
+                prob = probabilities[i]
+                threat_score = float(prob[1]) if len(prob) > 1 else float(pred)
             else:
-                pred = predictions[i]
-                # IsolationForest style: -1 anomaly -> score 1.0
-                threat_score = float(1.0 if int(pred) == -1 else 0.0)
-                threat_detected = (int(pred) == -1)
-            
+                threat_score = float(pred)
             results.append({
                 'index': i,
-                'threat_detected': threat_detected,
+                'threat_detected': bool(pred),
                 'threat_score': threat_score,
                 'threat_level': classify_threat_level(threat_score)
             })
@@ -74,9 +72,9 @@ def batch_predict():
         # Summary statistics
         summary = {
             'total_processed': len(results),
-            'threats_detected': sum(1 for r in results if r['threat_detected']),
-            'average_threat_score': float(np.mean([r['threat_score'] for r in results])) if results else 0.0,
-            'critical_threats': sum(1 for r in results if r['threat_level'] == 'Critical')
+            'threats_detected': int(sum(1 for r in results if r['threat_detected'])),
+            'average_threat_score': float(np.mean([r['threat_score'] for r in results])),
+            'critical_threats': int(sum(1 for r in results if r['threat_level'] == 'Critical'))
         }
         
         return jsonify({
