@@ -20,6 +20,13 @@ help:
 	@echo "  make down-prod  - Stop production environment"
 	@echo "  make test-prod  - Test production environment"
 	@echo ""
+	@echo "Testing:"
+	@echo "  make test       - Run unit and integration tests"
+	@echo "  make test-unit  - Run unit tests only"
+	@echo "  make test-api   - Run API tests only"
+	@echo "  make test-all   - Run comprehensive test suite"
+	@echo "  make test-coverage - Run tests with coverage report"
+	@echo ""
 	@echo "Maintenance:"
 	@echo "  make clean      - Clean up Docker resources"
 	@echo "  make logs-api   - View API logs only"
@@ -106,3 +113,26 @@ prod: build-prod up-prod
 	@echo "API: http://localhost:5001"
 	@echo "Dashboard: http://localhost:3000"
 	@echo "Nginx: http://localhost:80"
+
+# Testing
+test: test-unit test-integration
+
+test-unit:
+	@echo "Running unit tests..."
+	python -m pytest tests/unit_test.py -v
+
+test-integration:
+	@echo "Running integration tests..."
+	python -m pytest tests/integration_test.py -v
+
+test-api:
+	@echo "Running API tests..."
+	python -m pytest tests/api_test.py -v
+
+test-all:
+	@echo "Running all tests..."
+	python tests/test_runner.py
+
+test-coverage:
+	@echo "Running tests with coverage..."
+	python -m pytest tests/ --cov=src --cov-report=html --cov-report=term-missing
