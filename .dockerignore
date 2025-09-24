@@ -1,0 +1,75 @@
+# Git
+.git
+.gitignore
+
+# Python
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.log
+.pytest_cache/
+
+# Virtual environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Jupyter
+.ipynb_checkpoints
+
+# Documentation
+README.md
+CHANGELOG.md
+docs/
+*.md
+
+# Testing
+test_*.py
+tests/
+.pytest_cache/
+
+# Node modules (for frontend)
+frontend/cybersecurity-dashboard/node_modules/
+frontend/cybersecurity-dashboard/build/
+
+# Logs
+logs/
+*.log
+
+# Temporary files
+*.tmp
+*.temp

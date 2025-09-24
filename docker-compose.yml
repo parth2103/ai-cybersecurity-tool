@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  # AI Cybersecurity API
+  api:
+    build: .
+    container_name: ai-cybersecurity-api
+    ports:
+      - "5001:5001"
+    environment:
+      - FLASK_ENV=production
+      - FLASK_APP=api/app.py
+      - PYTHONPATH=/app
+    volumes:
+      - ./models:/app/models:ro
+      - ./data:/app/data:ro
+      - ./logs:/app/logs
+    networks:
+      - cybersecurity-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # React Dashboard
+  frontend:
+    build: ./frontend/cybersecurity-dashboard
+    container_name: ai-cybersecurity-dashboard
+    ports:
+      - "3000:3000"
+    environment:
+      - REACT_APP_API_URL=http://localhost:5001
+    depends_on:
+      - api
+    networks:
+      - cybersecurity-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  cybersecurity-network:
+    driver: bridge
+
+volumes:
+  logs:
+    driver: local
