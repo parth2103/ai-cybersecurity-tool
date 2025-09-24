@@ -27,6 +27,12 @@ help:
 	@echo "  make test-all   - Run comprehensive test suite"
 	@echo "  make test-coverage - Run tests with coverage report"
 	@echo ""
+	@echo "Performance Testing:"
+	@echo "  make test-performance - Run comprehensive performance tests"
+	@echo "  make test-quick-performance - Run quick performance validation"
+	@echo "  make test-benchmark - Run benchmark comparison tests"
+	@echo "  make test-all-performance - Run all performance tests"
+	@echo ""
 	@echo "Maintenance:"
 	@echo "  make clean      - Clean up Docker resources"
 	@echo "  make logs-api   - View API logs only"
@@ -136,3 +142,20 @@ test-all:
 test-coverage:
 	@echo "Running tests with coverage..."
 	python -m pytest tests/ --cov=src --cov-report=html --cov-report=term-missing
+
+# Performance Testing
+test-performance:
+	@echo "Running comprehensive performance tests..."
+	python tests/performance_test.py
+
+test-quick-performance:
+	@echo "Running quick performance test..."
+	python tests/quick_performance_test.py
+
+test-benchmark:
+	@echo "Running benchmark tests..."
+	python tests/benchmark_test.py
+
+test-all-performance:
+	@echo "Running all performance tests..."
+	python tests/quick_performance_test.py && python tests/benchmark_test.py
