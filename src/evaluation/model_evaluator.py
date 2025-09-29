@@ -43,7 +43,7 @@ class ModelEvaluator:
         plt.xlabel('Predicted Label')
         plt.tight_layout()
         plt.savefig(f'results/confusion_matrix_{model_name}.png')
-        plt.show()
+        plt.close()  # Close instead of show
     
     def compare_models(self):
         """Create comparison table of all evaluated models"""
@@ -86,4 +86,4 @@ class ModelEvaluator:
             
         plt.tight_layout()
         plt.savefig('results/model_comparison.png')
-        plt.show()
+        plt.close()  # Close instead of show

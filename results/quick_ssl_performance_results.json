@@ -1,0 +1,85 @@
+{
+  "model_loading": {
+    "loading_time": 2.1457672119140625e-06,
+    "model_status": {
+      "baseline_model_loaded": true,
+      "ssl_encoder_loaded": true,
+      "enhanced_model_loaded": true,
+      "feature_scaler_loaded": true,
+      "feature_names_loaded": true,
+      "ssl_available": true
+    }
+  },
+  "basic_performance": {
+    "baseline_times": [
+      0.04012179374694824,
+      0.02727508544921875,
+      0.028261184692382812,
+      0.026821136474609375,
+      0.027090072631835938,
+      0.026432037353515625,
+      0.027320146560668945,
+      0.02859783172607422,
+      0.026688098907470703,
+      0.02591705322265625
+    ],
+    "ssl_times": [
+      0.0351259708404541,
+      0.032216787338256836,
+      0.02759385108947754,
+      0.029011964797973633,
+      0.027172088623046875,
+      0.02733016014099121,
+      0.02718210220336914,
+      0.025848865509033203,
+      0.02706003189086914,
+      0.0285189151763916
+    ],
+    "predictions_match": [
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+    ]
+  },
+  "feature_comparison": {
+    "comparison_time": 0.05390310287475586,
+    "comparison_result": {
+      "baseline": {
+        "prediction": "0",
+        "confidence": 0.91,
+        "threat_level": "Critical",
+        "model_type": "baseline",
+        "inference_time": 0.026554346084594727,
+        "features_used": 78,
+        "timestamp": 1759176336.403611
+      },
+      "enhanced": {
+        "prediction": "0",
+        "confidence": 1.0,
+        "threat_level": "Critical",
+        "model_type": "ssl_enhanced",
+        "inference_time": 0.027335166931152344,
+        "features_used": 78,
+        "timestamp": 1759176336.430947
+      },
+      "prediction_match": true,
+      "confidence_difference": 0.08999999999999997,
+      "threat_level_match": true
+    }
+  },
+  "summary": {
+    "average_baseline_time": 0.028452444076538085,
+    "average_ssl_time": 0.028706073760986328,
+    "time_overhead": 0.0002536296844482429,
+    "relative_overhead": 0.8914161601230812,
+    "prediction_match_rate": 1.0,
+    "total_tests": 10
+  }
+}

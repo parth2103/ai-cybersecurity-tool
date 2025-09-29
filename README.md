@@ -37,6 +37,14 @@ Artifacts:
 - `src/evaluation/model_evaluator.py`: metrics, confusion matrix, model comparison
 - `src/evaluation/performance_monitor.py`: real-time performance metrics
 
+## SSL Enhancement (Advanced)
+- `src/models/ssl_enhancement.py`: SimCLR-style self-supervised learning
+- `src/models/integrate_ssl.py`: SSL integration with existing models
+- `src/models/ssl_api_integration.py`: Production-ready SSL API functions
+- `train_ssl_enhanced.py`: SSL training pipeline
+- `compare_ssl_performance.py`: Performance comparison tools
+- `test_ssl_module.py`: SSL module validation tests
+
 ## API (Week 3)
 Start server:
 ```bash
@@ -96,6 +104,35 @@ curl -X POST http://localhost:5001/predict \
     }
   }'
 ```
+
+## SSL Enhancement Usage
+
+### Quick SSL Setup
+```bash
+# Install SSL dependencies
+pip install torch torchvision tqdm
+
+# Test SSL module
+python test_ssl_module.py
+
+# Train SSL encoder (optional enhancement)
+python train_ssl_enhanced.py --mode ssl-only --epochs 50
+
+# Compare performance (quick test)
+python quick_ssl_performance_test.py
+
+# Compare performance (comprehensive - may take longer)
+python compare_ssl_performance.py
+```
+
+### SSL Features
+- **Self-supervised learning** with SimCLR-style contrastive learning
+- **Network-specific augmentation** (noise, dropout, scaling, temporal shifts)
+- **Non-destructive integration** - preserves existing 99.97% accuracy baseline
+- **Production-ready** - API-compatible with graceful fallback
+- **Performance monitoring** - comprehensive comparison tools
+
+See `SSL_ENHANCEMENT_README.md` for detailed documentation.
 
 ## Development
 - Tests: `pytest`

@@ -3,7 +3,7 @@ import axios from 'axios';
 import io from 'socket.io-client';
 import {
   Container, Grid, Paper, Typography, Card, CardContent,
-  Alert, Box, LinearProgress, Chip
+  Alert, Box, LinearProgress, Chip, Button
 } from '@mui/material';
 import {
   LineChart, Line, AreaChart, Area, XAxis, YAxis,
@@ -11,6 +11,7 @@ import {
 } from 'recharts';
 
 const API_URL = 'http://localhost:5001';
+const API_KEY = 'dev-key-123';
 const socket = io(API_URL);
 
 const Dashboard = () => {
@@ -24,24 +25,18 @@ const Dashboard = () => {
   const [systemInfo, setSystemInfo] = useState({});
   const [loading, setLoading] = useState(true);
   const [realtimeData, setRealtimeData] = useState([]);
+  const [connectionStatus, setConnectionStatus] = useState('Connecting...');
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    // Fetch initial data
     fetchStats();
     fetchSystemInfo();
     fetchAlerts();
 
-    // Set up WebSocket listeners
     socket.on('new_alert', (alert) => {
       setAlerts(prev => [alert, ...prev].slice(0, 20));
-      
-      // Show notification
-      if (alert.threat_level === 'Critical') {
-        showNotification('Critical Threat Detected!', alert);
-      }
     });
 
-    // Update data every 5 seconds
     const interval = setInterval(() => {
       fetchStats();
       fetchSystemInfo();
@@ -55,10 +50,12 @@ const Dashboard = () => {
 
   const fetchStats = async () => {
     try {
-      const response = await axios.get(`${API_URL}/stats`);
+      setConnectionStatus('Fetching stats...');
+      const response = await axios.get(`${API_URL}/stats`, { headers: { 'X-API-Key': API_KEY } });
       setStats(response.data);
-      
-      // Update realtime chart data
+      setConnectionStatus('Connected');
+      setError(null);
+
       if (response.data.threat_history.length > 0) {
         const chartData = response.data.threat_history.slice(-20).map((item, index) => ({
           time: new Date(item.timestamp).toLocaleTimeString(),
@@ -70,33 +67,42 @@ const Dashboard = () => {
       setLoading(false);
     } catch (error) {
       console.error('Error fetching stats:', error);
+      setConnectionStatus('Connection failed');
+      setError(`Failed to fetch stats: ${error.response?.data?.error || error.message}`);
     }
   };
 
   const fetchSystemInfo = async () => {
     try {
-      const response = await axios.get(`${API_URL}/system/info`);
+      const response = await axios.get(`${API_URL}/system/info`, { headers: { 'X-API-Key': 'admin-key-789' } });
       setSystemInfo(response.data);
     } catch (error) {
       console.error('Error fetching system info:', error);
+      setError(`Failed to fetch system info: ${error.response?.data?.error || error.message}`);
     }
   };
 
   const fetchAlerts = async () => {
     try {
-      const response = await axios.get(`${API_URL}/alerts`);
-      setAlerts(response.data.alerts || []);
+      const response = await axios.get(`${API_URL}/alerts`, { headers: { 'X-API-Key': API_KEY } });
+      let incoming = response.data.alerts || [];
+      if (incoming.length === 0 && stats.threat_history?.length) {
+        const derived = stats.threat_history
+          .slice(-50)
+          .filter(h => (h.threat_level || 'None') !== 'None' && (h.threat_level !== 'Low'))
+          .reverse()
+          .map(h => ({
+            timestamp: h.timestamp,
+            threat_level: h.threat_level,
+            threat_score: h.threat_score,
+            source_ip: h.source_ip || 'Unknown',
+            attack_type: h.attack_type || 'Detected Threat'
+          }));
+        incoming = derived.slice(0, 20);
+      }
+      setAlerts(incoming);
     } catch (error) {
       console.error('Error fetching alerts:', error);
-    }
-  };
-
-  const showNotification = (title, alert) => {
-    if (Notification.permission === 'granted') {
-      new Notification(title, {
-        body: `Source: ${alert.source_ip}\nType: ${alert.attack_type}`,
-        icon: '/alert-icon.png'
-      });
     }
   };
 
@@ -132,7 +138,27 @@ const Dashboard = () => {
         AI Cybersecurity Dashboard
       </Typography>
 
-      {/* Current Status */}
+      <Box sx={{ mb: 2 }}>
+        <Chip 
+          label={`Status: ${connectionStatus}`} 
+          color={connectionStatus === 'Connected' ? 'success' : 'error'}
+          variant="outlined"
+        />
+        <Button 
+          variant="outlined" 
+          size="small" 
+          onClick={() => { setError(null); fetchStats(); fetchSystemInfo(); }}
+          sx={{ ml: 2 }}
+        >
+          Test Connection
+        </Button>
+        {error && (
+          <Alert severity="error" sx={{ mt: 1 }}>
+            {error}
+          </Alert>
+        )}
+      </Box>
+
       <Grid container spacing={3}>
         <Grid item xs={12}>
           <Alert 
@@ -144,9 +170,9 @@ const Dashboard = () => {
           </Alert>
         </Grid>
 
-        {/* Stats Cards */}
+        {/* Stats Cards (uniform height) */}
         <Grid item xs={12} sm={6} md={3}>
-          <Card>
+          <Card sx={{ height: 140, display: 'flex', alignItems: 'center' }}>
             <CardContent>
               <Typography color="textSecondary" gutterBottom>
                 Total Requests
@@ -157,9 +183,8 @@ const Dashboard = () => {
             </CardContent>
           </Card>
         </Grid>
-
         <Grid item xs={12} sm={6} md={3}>
-          <Card>
+          <Card sx={{ height: 140, display: 'flex', alignItems: 'center' }}>
             <CardContent>
               <Typography color="textSecondary" gutterBottom>
                 Threats Detected
@@ -170,9 +195,8 @@ const Dashboard = () => {
             </CardContent>
           </Card>
         </Grid>
-
         <Grid item xs={12} sm={6} md={3}>
-          <Card>
+          <Card sx={{ height: 140, display: 'flex', alignItems: 'center' }}>
             <CardContent>
               <Typography color="textSecondary" gutterBottom>
                 Detection Rate
@@ -183,9 +207,8 @@ const Dashboard = () => {
             </CardContent>
           </Card>
         </Grid>
-
         <Grid item xs={12} sm={6} md={3}>
-          <Card>
+          <Card sx={{ height: 140, display: 'flex', alignItems: 'center' }}>
             <CardContent>
               <Typography color="textSecondary" gutterBottom>
                 System Health
@@ -210,59 +233,63 @@ const Dashboard = () => {
 
         {/* Real-time Threat Chart */}
         <Grid item xs={12} md={8}>
-          <Paper sx={{ p: 2 }}>
+          <Paper sx={{ p: 2, minHeight: 380, display: 'flex', flexDirection: 'column' }}>
             <Typography variant="h6" gutterBottom>
               Real-time Threat Scores
             </Typography>
-            <ResponsiveContainer width="100%" height={300}>
-              <AreaChart data={realtimeData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="time" />
-                <YAxis domain={[0, 100]} />
-                <Tooltip />
-                <Area 
-                  type="monotone" 
-                  dataKey="threat_score" 
-                  stroke="#ff5722" 
-                  fill="#ff5722" 
-                  fillOpacity={0.3}
-                />
-              </AreaChart>
-            </ResponsiveContainer>
+            <Box sx={{ flex: 1 }}>
+              <ResponsiveContainer width="100%" height={300}>
+                <AreaChart data={realtimeData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="time" />
+                  <YAxis domain={[0, 100]} />
+                  <Tooltip />
+                  <Area 
+                    type="monotone" 
+                    dataKey="threat_score" 
+                    stroke="#ff5722" 
+                    fill="#ff5722" 
+                    fillOpacity={0.3}
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </Box>
           </Paper>
         </Grid>
 
         {/* Threat Distribution */}
         <Grid item xs={12} md={4}>
-          <Paper sx={{ p: 2 }}>
+          <Paper sx={{ p: 2, minHeight: 380, display: 'flex', flexDirection: 'column' }}>
             <Typography variant="h6" gutterBottom>
               Threat Distribution
             </Typography>
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={pieData}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={(entry) => `${entry.name}: ${entry.value}`}
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="value"
-                >
-                  {pieData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
+            <Box sx={{ flex: 1 }}>
+              <ResponsiveContainer width="100%" height={300}>
+                <PieChart>
+                  <Pie
+                    data={pieData}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={(entry) => `${entry.name}: ${entry.value}`}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                  >
+                    {pieData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            </Box>
           </Paper>
         </Grid>
 
         {/* Recent Alerts */}
         <Grid item xs={12}>
-          <Paper sx={{ p: 2 }}>
+          <Paper sx={{ p: 2, minHeight: 380, display: 'flex', flexDirection: 'column' }}>
             <Typography variant="h6" gutterBottom>
               Recent Alerts
             </Typography>

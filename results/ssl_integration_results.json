@@ -1,0 +1,135 @@
+{
+  "ssl_training": {
+    "final_train_loss": 3.504148930311203,
+    "final_val_loss": 3.3118178844451904,
+    "best_val_loss": 3.3118178844451904,
+    "epochs_trained": 3
+  },
+  "performance_comparison": {
+    "baseline_accuracy": 1.0,
+    "enhanced_accuracy": 1.0,
+    "accuracy_improvement": 0.0,
+    "relative_improvement": 0.0,
+    "baseline_inference_time": 0.0139617919921875,
+    "enhanced_inference_time": 0.014237403869628906,
+    "enhanced_training_time": 0.07569599151611328,
+    "baseline_features": 78,
+    "enhanced_features": 110,
+    "baseline_importance_mean": 0.01282051282051282,
+    "enhanced_importance_mean": 0.0,
+    "baseline_importance_std": 0.01944130873611344,
+    "enhanced_importance_std": 0.0,
+    "baseline_classification_report": {
+      "0": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 200.0
+      },
+      "accuracy": 1.0,
+      "macro avg": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 200.0
+      },
+      "weighted avg": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 200.0
+      }
+    },
+    "enhanced_classification_report": {
+      "0": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 200.0
+      },
+      "accuracy": 1.0,
+      "macro avg": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 200.0
+      },
+      "weighted avg": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 200.0
+      }
+    },
+    "baseline_confusion_matrix": [
+      [
+        200
+      ]
+    ],
+    "enhanced_confusion_matrix": [
+      [
+        200
+      ]
+    ]
+  },
+  "feature_analysis": {
+    "baseline_top_features": [
+      54,
+      10,
+      39,
+      42,
+      52,
+      41,
+      13,
+      12,
+      63,
+      62
+    ],
+    "enhanced_top_features": [
+      109,
+      40,
+      29,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35,
+      36
+    ],
+    "baseline_top_importance": [
+      0.10085250639204953,
+      0.08095968737186783,
+      0.06080252025819195,
+      0.056671894581202864,
+      0.05215304923248066,
+      0.05018278981493125,
+      0.04802588695596031,
+      0.035346817031932515,
+      0.03274526116602407,
+      0.0295073845912849
+    ],
+    "enhanced_top_importance": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "ssl_feature_contribution": 0.0
+  },
+  "data_info": {
+    "total_samples": 1000,
+    "features": 78,
+    "classes": 1,
+    "class_distribution": {
+      "0": 1000
+    }
+  },
+  "total_pipeline_time": 1.0465121269226074
+}

@@ -1,0 +1,185 @@
+{
+  "model_loading": {
+    "baseline_loading_time": 0.011671781539916992,
+    "ssl_loading_time": 0.01073002815246582,
+    "loading_overhead": -0.0009417533874511719,
+    "success": true
+  },
+  "prediction_performance": {
+    "scenarios": [
+      {
+        "scenario_id": 1,
+        "baseline_time": 0.041033267974853516,
+        "ssl_time": 0.03496289253234863,
+        "time_overhead": -0.006070375442504883,
+        "baseline_prediction": "0",
+        "ssl_prediction": "0",
+        "prediction_match": true,
+        "baseline_confidence": 0.91,
+        "ssl_confidence": 1.0,
+        "baseline_threat_level": "Critical",
+        "ssl_threat_level": "Critical"
+      },
+      {
+        "scenario_id": 2,
+        "baseline_time": 0.028773784637451172,
+        "ssl_time": 0.027259349822998047,
+        "time_overhead": -0.001514434814453125,
+        "baseline_prediction": "0",
+        "ssl_prediction": "0",
+        "prediction_match": true,
+        "baseline_confidence": 0.93,
+        "ssl_confidence": 1.0,
+        "baseline_threat_level": "Critical",
+        "ssl_threat_level": "Critical"
+      },
+      {
+        "scenario_id": 3,
+        "baseline_time": 0.028657913208007812,
+        "ssl_time": 0.024714946746826172,
+        "time_overhead": -0.003942966461181641,
+        "baseline_prediction": "0",
+        "ssl_prediction": "0",
+        "prediction_match": true,
+        "baseline_confidence": 0.91,
+        "ssl_confidence": 1.0,
+        "baseline_threat_level": "Critical",
+        "ssl_threat_level": "Critical"
+      },
+      {
+        "scenario_id": 4,
+        "baseline_time": 0.02765369415283203,
+        "ssl_time": 0.027032136917114258,
+        "time_overhead": -0.0006215572357177734,
+        "baseline_prediction": "0",
+        "ssl_prediction": "0",
+        "prediction_match": true,
+        "baseline_confidence": 0.94,
+        "ssl_confidence": 1.0,
+        "baseline_threat_level": "Critical",
+        "ssl_threat_level": "Critical"
+      },
+      {
+        "scenario_id": 5,
+        "baseline_time": 0.027465105056762695,
+        "ssl_time": 0.025413990020751953,
+        "time_overhead": -0.002051115036010742,
+        "baseline_prediction": "0",
+        "ssl_prediction": "0",
+        "prediction_match": true,
+        "baseline_confidence": 0.97,
+        "ssl_confidence": 1.0,
+        "baseline_threat_level": "Critical",
+        "ssl_threat_level": "Critical"
+      },
+      {
+        "scenario_id": 6,
+        "baseline_time": 0.028033971786499023,
+        "ssl_time": 0.02724480628967285,
+        "time_overhead": -0.0007891654968261719,
+        "baseline_prediction": "0",
+        "ssl_prediction": "0",
+        "prediction_match": true,
+        "baseline_confidence": 0.91,
+        "ssl_confidence": 1.0,
+        "baseline_threat_level": "Critical",
+        "ssl_threat_level": "Critical"
+      }
+    ],
+    "summary": {
+      "total_scenarios": 6,
+      "successful_scenarios": 6,
+      "average_baseline_time": 0.030269622802734375,
+      "average_ssl_time": 0.027771353721618652,
+      "average_time_overhead": -0.0024982690811157227,
+      "prediction_match_rate": 1.0,
+      "total_baseline_time": 0.18161773681640625,
+      "total_ssl_time": 0.16662812232971191
+    }
+  },
+  "feature_analysis": {
+    "error": "name 'joblib' is not defined"
+  },
+  "scalability_test": {
+    "batch_sizes": [
+      1,
+      5,
+      10,
+      20
+    ],
+    "baseline_times": [
+      0.027985334396362305,
+      0.13347721099853516,
+      0.25708961486816406,
+      0.549997091293335
+    ],
+    "ssl_times": [
+      0.026842832565307617,
+      0.1365339756011963,
+      0.267930269241333,
+      0.5531268119812012
+    ]
+  },
+  "robustness_test": {
+    "robustness_tests": [
+      {
+        "scenario": "baseline",
+        "baseline_success": true,
+        "ssl_success": true,
+        "prediction_match": true
+      },
+      {
+        "scenario": "noisy_data",
+        "baseline_success": true,
+        "ssl_success": true,
+        "prediction_match": true
+      },
+      {
+        "scenario": "missing_features",
+        "baseline_success": true,
+        "ssl_success": true,
+        "prediction_match": true
+      },
+      {
+        "scenario": "extreme_values",
+        "baseline_success": true,
+        "ssl_success": true,
+        "prediction_match": true
+      }
+    ]
+  },
+  "integration_test": {
+    "model_status": {
+      "baseline_model_loaded": true,
+      "ssl_encoder_loaded": true,
+      "enhanced_model_loaded": true,
+      "feature_scaler_loaded": true,
+      "feature_names_loaded": true,
+      "ssl_available": true
+    },
+    "comparison_test": {
+      "baseline": {
+        "prediction": "0",
+        "confidence": 0.91,
+        "threat_level": "Critical",
+        "model_type": "baseline",
+        "inference_time": 0.02764606475830078,
+        "features_used": 78,
+        "timestamp": 1759176404.984121
+      },
+      "enhanced": {
+        "prediction": "0",
+        "confidence": 1.0,
+        "threat_level": "Critical",
+        "model_type": "ssl_enhanced",
+        "inference_time": 0.028416156768798828,
+        "features_used": 78,
+        "timestamp": 1759176405.0125382
+      },
+      "prediction_match": true,
+      "confidence_difference": 0.08999999999999997,
+      "threat_level_match": true
+    },
+    "api_functional": true
+  }
+}

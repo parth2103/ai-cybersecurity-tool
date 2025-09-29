@@ -1,0 +1,142 @@
+name: Dependency Updates
+
+on:
+  schedule:
+    # Run every Monday at 9 AM UTC
+    - cron: '0 9 * * 1'
+  workflow_dispatch:
+
+jobs:
+  update-dependencies:
+    name: Update Dependencies
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        
+    - name: Update Python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pip-tools
+        
+        # Update requirements.txt
+        pip-compile --upgrade requirements.in
+        
+        # Check for security vulnerabilities
+        pip install safety
+        safety check
+        
+    - name: Update Node.js dependencies
+      run: |
+        cd frontend/cybersecurity-dashboard
+        npm update
+        npm audit fix
+        
+    - name: Check for changes
+      id: changes
+      run: |
+        if git diff --quiet; then
+          echo "changed=false" >> $GITHUB_OUTPUT
+        else
+          echo "changed=true" >> $GITHUB_OUTPUT
+        fi
+        
+    - name: Create Pull Request
+      if: steps.changes.outputs.changed == 'true'
+      uses: peter-evans/create-pull-request@v5
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        commit-message: 'chore: update dependencies'
+        title: 'Automated dependency updates'
+        body: |
+          This PR contains automated dependency updates.
+          
+          ## Changes
+          - Updated Python dependencies
+          - Updated Node.js dependencies
+          - Fixed security vulnerabilities
+          
+          ## Testing
+          Please review and test the changes before merging.
+        branch: dependency-updates
+        delete-branch: true
+        
+  security-audit:
+    name: Security Audit
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        
+    - name: Run Python security audit
+      run: |
+        python -m pip install --upgrade pip
+        pip install safety bandit
+        
+        # Check for known security vulnerabilities
+        safety check --json --output safety-report.json
+        
+        # Run security linting
+        bandit -r src/ api/ -f json -o bandit-report.json
+        
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        
+    - name: Run Node.js security audit
+      run: |
+        cd frontend/cybersecurity-dashboard
+        npm audit --audit-level=moderate --json > npm-audit-report.json
+        
+    - name: Upload security reports
+      uses: actions/upload-artifact@v3
+      with:
+        name: security-audit-reports
+        path: |
+          safety-report.json
+          bandit-report.json
+          frontend/cybersecurity-dashboard/npm-audit-report.json
+        retention-days: 30
+        
+    - name: Comment on issues if vulnerabilities found
+      if: failure()
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const fs = require('fs');
+          
+          // Check if safety report has vulnerabilities
+          if (fs.existsSync('safety-report.json')) {
+            const safetyReport = JSON.parse(fs.readFileSync('safety-report.json', 'utf8'));
+            if (safetyReport.length > 0) {
+              console.log('Security vulnerabilities found in Python dependencies');
+            }
+          }
+          
+          // Check if bandit report has issues
+          if (fs.existsSync('bandit-report.json')) {
+            const banditReport = JSON.parse(fs.readFileSync('bandit-report.json', 'utf8'));
+            if (banditReport.results && banditReport.results.length > 0) {
+              console.log('Security issues found in code');
+            }
+          }

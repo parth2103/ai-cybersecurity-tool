@@ -29,8 +29,8 @@ class DataPreprocessor:
     
     def prepare_features(self, df):
         """Prepare features and labels"""
-        # Get label column
-        label_col = 'Label'
+        # Get label column (handle both 'Label' and ' Label')
+        label_col = ' Label' if ' Label' in df.columns else 'Label'
         
         # Binary classification
         y = (df[label_col] != 'BENIGN').astype(int)
