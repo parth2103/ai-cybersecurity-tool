@@ -7,6 +7,7 @@ import requests
 import time
 import os
 import sys
+import numpy as np
 from unittest.mock import patch, MagicMock
 
 # Add project root to path

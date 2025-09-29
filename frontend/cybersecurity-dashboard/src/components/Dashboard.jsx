@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import io from 'socket.io-client';
 import {
@@ -6,7 +6,7 @@ import {
   Alert, Box, LinearProgress, Chip, Button
 } from '@mui/material';
 import {
-  LineChart, Line, AreaChart, Area, XAxis, YAxis,
+  AreaChart, Area, XAxis, YAxis,
   CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell
 } from 'recharts';
 
@@ -28,27 +28,7 @@ const Dashboard = () => {
   const [connectionStatus, setConnectionStatus] = useState('Connecting...');
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    fetchStats();
-    fetchSystemInfo();
-    fetchAlerts();
-
-    socket.on('new_alert', (alert) => {
-      setAlerts(prev => [alert, ...prev].slice(0, 20));
-    });
-
-    const interval = setInterval(() => {
-      fetchStats();
-      fetchSystemInfo();
-    }, 5000);
-
-    return () => {
-      clearInterval(interval);
-      socket.disconnect();
-    };
-  }, []);
-
-  const fetchStats = async () => {
+  const fetchStats = useCallback(async () => {
     try {
       setConnectionStatus('Fetching stats...');
       const response = await axios.get(`${API_URL}/stats`, { headers: { 'X-API-Key': API_KEY } });
@@ -70,9 +50,9 @@ const Dashboard = () => {
       setConnectionStatus('Connection failed');
       setError(`Failed to fetch stats: ${error.response?.data?.error || error.message}`);
     }
-  };
+  }, []);
 
-  const fetchSystemInfo = async () => {
+  const fetchSystemInfo = useCallback(async () => {
     try {
       const response = await axios.get(`${API_URL}/system/info`, { headers: { 'X-API-Key': 'admin-key-789' } });
       setSystemInfo(response.data);
@@ -80,9 +60,9 @@ const Dashboard = () => {
       console.error('Error fetching system info:', error);
       setError(`Failed to fetch system info: ${error.response?.data?.error || error.message}`);
     }
-  };
+  }, []);
 
-  const fetchAlerts = async () => {
+  const fetchAlerts = useCallback(async () => {
     try {
       const response = await axios.get(`${API_URL}/alerts`, { headers: { 'X-API-Key': API_KEY } });
       let incoming = response.data.alerts || [];
@@ -104,7 +84,27 @@ const Dashboard = () => {
     } catch (error) {
       console.error('Error fetching alerts:', error);
     }
-  };
+  }, [stats.threat_history]);
+
+  useEffect(() => {
+    fetchStats();
+    fetchSystemInfo();
+    fetchAlerts();
+
+    socket.on('new_alert', (alert) => {
+      setAlerts(prev => [alert, ...prev].slice(0, 20));
+    });
+
+    const interval = setInterval(() => {
+      fetchStats();
+      fetchSystemInfo();
+    }, 5000);
+
+    return () => {
+      clearInterval(interval);
+      socket.disconnect();
+    };
+  }, [fetchStats, fetchSystemInfo, fetchAlerts]);
 
   const getThreatLevelColor = (level) => {
     const colors = {
