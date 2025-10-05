@@ -1,12 +1,17 @@
 # AI Cybersecurity Tool
 
-End-to-end ML pipeline for network threat detection using CICIDS2017 with real-time dashboard.
+End-to-end ML pipeline for network threat detection using CICIDS2017 with real-time dashboard and advanced explainability features.
 
 ## Features
 - **Week 1**: Baseline pipeline (RandomForest), preprocessing, artifacts saved to `data/processed/` and `models/`
 - **Week 2**: Supervised (XGBoost), anomaly detection (IsolationForest), ensemble combiner, comprehensive evaluation, performance monitoring
 - **Week 3**: Flask API + SocketIO with real-time alerts, batch processing endpoint
 - **Week 4**: Complete React dashboard with real-time threat monitoring, interactive charts, and live system health tracking
+- **Advanced Features**:
+  - Feature importance analysis and attention visualization
+  - Model performance monitoring with real-time metrics
+  - SSL enhancement with SimCLR-style contrastive learning
+  - Modern glassmorphism UI with animated effects
 
 ## Setup
 ```bash
@@ -37,13 +42,22 @@ Artifacts:
 - `src/evaluation/model_evaluator.py`: metrics, confusion matrix, model comparison
 - `src/evaluation/performance_monitor.py`: real-time performance metrics
 
-## SSL Enhancement (Advanced)
+## Advanced Model Components
+
+### SSL Enhancement
 - `src/models/ssl_enhancement.py`: SimCLR-style self-supervised learning
+- `src/models/ssl_encoder.py`: SSL encoder implementation
 - `src/models/integrate_ssl.py`: SSL integration with existing models
 - `src/models/ssl_api_integration.py`: Production-ready SSL API functions
 - `train_ssl_enhanced.py`: SSL training pipeline
 - `compare_ssl_performance.py`: Performance comparison tools
 - `test_ssl_module.py`: SSL module validation tests
+
+### Explainability & Monitoring
+- `src/models/attention_explainer.py`: Attention-based feature importance explanation
+- `api/endpoints/explain.py`: Explanation API endpoint module
+- Model performance tracking with running averages
+- Feature importance visualization
 
 ## API (Week 3)
 Start server:
@@ -53,13 +67,27 @@ python api/app.py
 ```
 **Server runs on port 5001** (avoiding macOS Control Center conflict on 5000)
 
-Endpoints:
-- `GET /health` – health check
-- `POST /predict` – single prediction; JSON { features: { ... } }
-- `POST /batch/predict` – batch predictions; JSON { logs: [ { ... }, ... ] }
-- `GET /stats` – threat statistics and history
-- `GET /alerts` – recent security alerts
-- `GET /system/info` – system performance metrics
+### Core Endpoints:
+- `GET /health` – Health check
+- `POST /predict` – Single prediction with feature analysis
+- `POST /batch/predict` – Batch predictions
+- `GET /stats` – Threat statistics and history
+- `GET /alerts` – Recent security alerts
+- `GET /system/info` – System performance metrics
+
+### Advanced Endpoints:
+- `POST /explain` – Get feature importance explanation for predictions
+- `GET /models/performance` – Real-time model performance metrics
+  - Predictions count per model
+  - Average confidence scores
+  - Response times
+  - Model health status
+
+### Authentication:
+All endpoints require `X-API-Key` header:
+```bash
+curl -H "X-API-Key: dev-key-123" http://localhost:5001/health
+```
 
 Requirements:
 - Expects models/artifacts in `models/`:
@@ -79,12 +107,34 @@ npm start
 ```
 **Dashboard runs on port 3000**
 
-Features:
+### Core Features:
 - **Real-time threat monitoring** with live updates via WebSocket
 - **Interactive charts** for threat scores and distribution
 - **System health monitoring** with CPU/memory usage
 - **Alert system** with threat level classification (None, Low, Medium, High, Critical)
 - **Material-UI components** for modern, responsive interface
+
+### Advanced Features:
+- **Feature Attention Visualizer** - Shows which features contributed most to predictions with:
+  - Bar chart visualization of feature importance
+  - Color-coded importance levels
+  - Natural language explanation of predictions
+  - Top 3 most influential features highlighted
+
+- **Model Performance Monitor** - Real-time model metrics including:
+  - Live predictions count per model
+  - Average confidence scores
+  - Response time tracking
+  - Model health status indicators
+  - Contribution weight visualization
+
+- **Modern UI/UX Enhancements**:
+  - Glassmorphism effects with backdrop blur
+  - Animated gradient borders and glow effects
+  - Shimmer animations on metric cards
+  - Pulsing alerts for critical threats
+  - Multi-layered background gradients
+  - Smooth transitions and hover effects
 
 ### Testing the System
 1. Start both servers (API on 5001, Dashboard on 3000)
@@ -134,7 +184,59 @@ python compare_ssl_performance.py
 
 See `SSL_ENHANCEMENT_README.md` for detailed documentation.
 
-## Development
-- Tests: `pytest`
+## Testing
+
+### Test Scripts
+- `test_simple_predictions.py`: Basic prediction testing
+- `test_attention_api.py`: Attention/explanation endpoint testing
+- `test_model_performance_api.py`: Model performance monitoring tests
+- `test_real_cicids_predictions.py`: Real CICIDS2017 data predictions
+- `test_attention_with_real_features.py`: Feature importance with real data
+- `tests/test_attention_explainer.py`: Unit tests for attention explainer
+
+### Running Tests
+```bash
+# Run all tests
+pytest
+
+# Run specific test file
+python test_simple_predictions.py
+
+# Test API endpoints
+python test_attention_api.py
+python test_model_performance_api.py
+```
+
+## Documentation
+- Main README: `README.md` (this file)
+- SSL Enhancement: `SSL_ENHANCEMENT_README.md`
+- Test Results: `TEST_RESULTS_REPORT.md`
+- Verification: `VERIFICATION_REPORT.md`
 - Progress log: `docs/PROGRESS.md`
 - Changelog: `CHANGELOG.md`
+
+## Project Structure
+```
+ai-cybersecurity-tool/
+├── api/                          # Flask API
+│   ├── app.py                   # Main API server
+│   └── endpoints/               # Modular endpoints
+├── frontend/                     # React dashboard
+│   └── cybersecurity-dashboard/
+│       ├── src/
+│       │   ├── components/      # React components
+│       │   ├── theme.js         # MUI dark theme
+│       │   └── App.js
+├── src/
+│   ├── models/                  # ML models
+│   │   ├── attention_explainer.py
+│   │   ├── ssl_encoder.py
+│   │   ├── ensemble_model.py
+│   │   └── ...
+│   └── evaluation/              # Evaluation tools
+├── data/                        # Data storage
+│   ├── cicids2017/             # CICIDS2017 dataset
+│   └── processed/              # Processed data
+├── models/                      # Saved models
+└── tests/                       # Test suite
+```
