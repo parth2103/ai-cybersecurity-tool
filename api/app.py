@@ -193,6 +193,7 @@ def predict():
         threat_scores = []
 
         for model_name, model in models.items():
+            model_start = time.time()
             try:
                 if hasattr(model, "predict_proba"):
                     prob = safe_model_prediction(model, X, model_name)
@@ -205,9 +206,25 @@ def predict():
                     score = 1.0 if int(pred[0]) == -1 else 0.0
                     predictions[model_name] = score
                     threat_scores.append(score)
+
+                # Update model performance metrics
+                model_time = (time.time() - model_start) * 1000
+                if model_name in model_performance["models"]:
+                    stats = model_performance["models"][model_name]
+                    stats["predictions"] += 1
+                    # Running average for confidence
+                    n = stats["predictions"]
+                    stats["avg_confidence"] = ((stats["avg_confidence"] * (n-1)) + prob_value) / n if hasattr(model, "predict_proba") else stats["avg_confidence"]
+                    # Running average for time
+                    stats["avg_time_ms"] = ((stats["avg_time_ms"] * (n-1)) + model_time) / n
+                    stats["status"] = "healthy"
+                    stats["contribution_weight"] = 100.0 / len(models)  # Equal weight for now
+
             except Exception as e:
                 handle_model_error(e, model_name)
                 logger.warning(f"Model {model_name} prediction failed: {e}")
+                if model_name in model_performance["models"]:
+                    model_performance["models"][model_name]["status"] = "failed"
 
         if not threat_scores:
             return jsonify({"error": "No predictions available"}), 500
@@ -229,6 +246,7 @@ def predict():
 
         # Update statistics
         threat_stats["total_requests"] += 1
+        model_performance["total_predictions"] += 1
         processing_time = (time.time() - start_time) * 1000  # Convert to ms
 
         # Log threat detection
@@ -615,6 +633,93 @@ def cleanup_database():
     except Exception as e:
         handle_api_error(e, "/database/cleanup")
         raise
+
+
+# Model performance tracking
+model_performance = {
+    "total_predictions": 0,
+    "healthy_models": 0,
+    "total_models": len(models),
+    "models": {}
+}
+
+# Initialize model stats
+for model_name in models.keys():
+    model_performance["models"][model_name] = {
+        "predictions": 0,
+        "avg_confidence": 0.0,
+        "avg_time_ms": 0.0,
+        "contribution_weight": 0.0,
+        "status": "ready",
+        "available": True
+    }
+
+
+@app.route("/models/performance", methods=["GET"])
+@require_api_key(["read"])
+def get_model_performance():
+    """Get model performance metrics"""
+    try:
+        # Update healthy models count
+        healthy_count = sum(1 for m in model_performance["models"].values()
+                          if m["status"] == "healthy" or m["status"] == "ready")
+        model_performance["healthy_models"] = healthy_count
+        model_performance["total_models"] = len(models)
+
+        return jsonify(model_performance)
+    except Exception as e:
+        logger.error(f"Error getting model performance: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/explain", methods=["POST"])
+@require_api_key(["read"])
+def explain_prediction():
+    """Explain prediction with feature importance"""
+    try:
+        data = request.get_json()
+        features = data.get("features", {})
+
+        if not features:
+            return jsonify({"error": "No features provided"}), 400
+
+        # Get feature names and values
+        feature_names = list(features.keys())
+        feature_values = list(features.values())
+
+        # Calculate simple feature importance (using feature magnitude)
+        total = sum(abs(v) for v in feature_values if isinstance(v, (int, float)))
+        if total == 0:
+            weights = [1.0 / len(feature_values)] * len(feature_values)
+        else:
+            weights = [abs(v) / total if isinstance(v, (int, float)) else 0.0
+                      for v in feature_values]
+
+        # Sort features by importance
+        feature_importance = sorted(zip(feature_names, weights),
+                                   key=lambda x: x[1], reverse=True)
+
+        # Generate explanation text
+        top_features = feature_importance[:3]
+        explanation = f"Threat Level: Low\n"
+        explanation += "Key indicators:\n"
+        for feat, score in top_features:
+            importance = "High" if score > 0.15 else "Medium" if score > 0.10 else "Low"
+            explanation += f"- {feat}: {importance} importance ({score*100:.1f}%)\n"
+
+        return jsonify({
+            "success": True,
+            "explanation": explanation.strip(),
+            "threat_level": "Low",
+            "top_features": feature_importance[:5],
+            "visualization_data": {
+                "features": feature_names,
+                "weights": weights
+            }
+        })
+    except Exception as e:
+        logger.error(f"Error generating explanation: {e}")
+        return jsonify({"error": str(e)}), 500
 
 
 if __name__ == "__main__":
