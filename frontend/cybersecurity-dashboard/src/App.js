@@ -2,7 +2,7 @@ import React from 'react';
 import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import { Box } from '@mui/material';
-import Dashboard from './components/Dashboard';
+import LiveDashboard from './components/LiveDashboard';
 import theme from './theme';
 
 function App() {
@@ -49,7 +49,7 @@ function App() {
           },
         }}
       >
-        <Dashboard />
+        <LiveDashboard />
       </Box>
     </ThemeProvider>
   );

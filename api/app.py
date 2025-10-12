@@ -267,7 +267,7 @@ def predict():
         except Exception as e:
             logger.warning(f"Failed to store threat in database: {e}")
 
-        if threat_level in ["Critical", "High"]:
+        if threat_level in ["Critical", "High", "Medium", "Low"]:
             threat_stats["threats_detected"] += 1
 
             # Create alert
