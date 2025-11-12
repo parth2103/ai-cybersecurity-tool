@@ -1,0 +1,92 @@
+{
+  "xgboost": {
+    "accuracy": 1.0,
+    "classification_report": {
+      "0": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 10000.0
+      },
+      "1": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 10000.0
+      },
+      "accuracy": 1.0,
+      "macro avg": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 20000.0
+      },
+      "weighted avg": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 20000.0
+      }
+    }
+  },
+  "isolation_forest": {
+    "accuracy": 0.94975,
+    "classification_report": {
+      "0": {
+        "precision": 1.0,
+        "recall": 0.8995,
+        "f1-score": 0.94709133982627,
+        "support": 10000.0
+      },
+      "1": {
+        "precision": 0.9086778736937755,
+        "recall": 1.0,
+        "f1-score": 0.9521542489883361,
+        "support": 10000.0
+      },
+      "accuracy": 0.94975,
+      "macro avg": {
+        "precision": 0.9543389368468878,
+        "recall": 0.94975,
+        "f1-score": 0.949622794407303,
+        "support": 20000.0
+      },
+      "weighted avg": {
+        "precision": 0.9543389368468878,
+        "recall": 0.94975,
+        "f1-score": 0.9496227944073031,
+        "support": 20000.0
+      }
+    }
+  },
+  "random_forest": {
+    "accuracy": 1.0,
+    "classification_report": {
+      "0": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 10000.0
+      },
+      "1": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 10000.0
+      },
+      "accuracy": 1.0,
+      "macro avg": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 20000.0
+      },
+      "weighted avg": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 20000.0
+      }
+    }
+  }
+}

@@ -1,0 +1,70 @@
+{
+  "new_random_forest": {
+    "accuracy": 0.5,
+    "precision": 0.5,
+    "recall": 1.0,
+    "f1_score": 0.6666666666666666,
+    "roc_auc": 1.0,
+    "confusion_matrix": [
+      [
+        0,
+        5000
+      ],
+      [
+        0,
+        5000
+      ]
+    ]
+  },
+  "new_isolation_forest": {
+    "accuracy": 0.9907,
+    "precision": 0.98173964264677,
+    "recall": 1.0,
+    "f1_score": 0.9907856930545922,
+    "roc_auc": 0.9888,
+    "confusion_matrix": [
+      [
+        4907,
+        93
+      ],
+      [
+        0,
+        5000
+      ]
+    ]
+  },
+  "old_random_forest_on_new_data": {
+    "accuracy": 0.5,
+    "precision": 0.0,
+    "recall": 0.0,
+    "f1_score": 0.0,
+    "roc_auc": 0.4525,
+    "confusion_matrix": [
+      [
+        5000,
+        0
+      ],
+      [
+        5000,
+        0
+      ]
+    ]
+  },
+  "old_isolation_forest_on_new_data": {
+    "accuracy": 0.5,
+    "precision": 0.0,
+    "recall": 0.0,
+    "f1_score": 0.0,
+    "roc_auc": 0.9999,
+    "confusion_matrix": [
+      [
+        5000,
+        0
+      ],
+      [
+        5000,
+        0
+      ]
+    ]
+  }
+}

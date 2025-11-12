@@ -69,57 +69,83 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 MODELS_DIR = PROJECT_ROOT / "models"
 
 # Attempt to load models and preprocessors (robust to missing files)
+# Priority: New models (trained on IoT-IDAD 2024 + CICAPT-IIOT) > Old models (CICIDS2017)
 models = {}
 
-# Try RF baseline (support legacy name)
+# Try RF baseline - prefer new models trained on new datasets
 rf_paths = [
-    MODELS_DIR / "baseline_model.pkl",
+    MODELS_DIR / "random_forest_new_datasets.pkl",  # New model (IoT-IDAD + CICAPT)
+    MODELS_DIR / "baseline_model.pkl",  # Fallback to old model
 ]
 for p in rf_paths:
     if p.exists():
         try:
             models["rf"] = joblib.load(p)
-            logger.info(f"Loaded RF model from {p}")
+            model_type = "NEW (IoT-IDAD + CICAPT)" if "new_datasets" in str(p) else "OLD (CICIDS2017)"
+            logger.info(f"Loaded RF model from {p} [{model_type}]")
             break
         except Exception as e:
             logger.warning(f"Failed to load RF model from {p}: {e}")
 
-# Try XGBoost
-xgb_path = MODELS_DIR / "xgboost_model.pkl"
-if xgb_path.exists():
-    try:
-        models["xgboost"] = joblib.load(xgb_path)
-        logger.info(f"Loaded XGBoost model from {xgb_path}")
-    except Exception as e:
-        logger.warning(f"Failed to load XGBoost model: {e}")
+# Try XGBoost - prefer new models
+xgb_paths = [
+    MODELS_DIR / "xgboost_model_new_datasets.pkl",  # New model
+    MODELS_DIR / "xgboost_model.pkl",  # Fallback to old model
+]
+for xgb_path in xgb_paths:
+    if xgb_path.exists():
+        try:
+            models["xgboost"] = joblib.load(xgb_path)
+            model_type = "NEW (IoT-IDAD + CICAPT)" if "new_datasets" in str(xgb_path) else "OLD (CICIDS2017)"
+            logger.info(f"Loaded XGBoost model from {xgb_path} [{model_type}]")
+            break
+        except Exception as e:
+            logger.warning(f"Failed to load XGBoost model from {xgb_path}: {e}")
 
-# Try Isolation Forest
-if_path = MODELS_DIR / "isolation_forest.pkl"
-if if_path.exists():
-    try:
-        models["isolation_forest"] = joblib.load(if_path)
-        logger.info(f"Loaded Isolation Forest model from {if_path}")
-    except Exception as e:
-        logger.warning(f"Failed to load Isolation Forest model: {e}")
+# Try Isolation Forest - prefer new models
+if_paths = [
+    MODELS_DIR / "isolation_forest_new_datasets.pkl",  # New model
+    MODELS_DIR / "isolation_forest.pkl",  # Fallback to old model
+]
+for if_path in if_paths:
+    if if_path.exists():
+        try:
+            models["isolation_forest"] = joblib.load(if_path)
+            model_type = "NEW (IoT-IDAD + CICAPT)" if "new_datasets" in str(if_path) else "OLD (CICIDS2017)"
+            logger.info(f"Loaded Isolation Forest model from {if_path} [{model_type}]")
+            break
+        except Exception as e:
+            logger.warning(f"Failed to load Isolation Forest model from {if_path}: {e}")
 
-# Scaler
+# Scaler - prefer new scaler
 scaler = None
-scaler_path = MODELS_DIR / "scaler.pkl"
-if scaler_path.exists():
-    try:
-        scaler = joblib.load(scaler_path)
-        logger.info("Loaded scaler.pkl")
-    except Exception as e:
-        logger.warning(f"Failed to load scaler.pkl: {e}")
+scaler_paths = [
+    MODELS_DIR / "scaler_new_datasets.pkl",  # New scaler
+    MODELS_DIR / "scaler.pkl",  # Fallback to old scaler
+]
+for scaler_path in scaler_paths:
+    if scaler_path.exists():
+        try:
+            scaler = joblib.load(scaler_path)
+            scaler_type = "NEW" if "new_datasets" in str(scaler_path) else "OLD"
+            logger.info(f"Loaded scaler from {scaler_path} [{scaler_type}]")
+            break
+        except Exception as e:
+            logger.warning(f"Failed to load scaler from {scaler_path}: {e}")
 
-# Feature names (used as selected features)
+# Feature names (used as selected features) - prefer new feature names
 selected_features = []
-feat_paths = [MODELS_DIR / "selected_features.pkl", MODELS_DIR / "feature_names.pkl"]
+feat_paths = [
+    MODELS_DIR / "feature_names_new_datasets.pkl",  # New features
+    MODELS_DIR / "selected_features.pkl",  # Fallback
+    MODELS_DIR / "feature_names.pkl",  # Fallback
+]
 for p in feat_paths:
     if p.exists():
         try:
             selected_features = list(joblib.load(p))
-            logger.info(f"Loaded feature list from {p}")
+            feat_type = "NEW" if "new_datasets" in str(p) else "OLD"
+            logger.info(f"Loaded feature list from {p} [{feat_type}]")
             break
         except Exception as e:
             logger.warning(f"Failed to load feature list from {p}: {e}")
