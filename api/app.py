@@ -178,6 +178,83 @@ def health_check():
     return jsonify({"status": "healthy", "timestamp": datetime.now().isoformat()})
 
 
+@app.route("/test-data/sample", methods=["GET"])
+@require_api_key(["read"])
+def get_test_data_sample():
+    """Get a sample test data for frontend testing"""
+    import json
+    from pathlib import Path
+    
+    test_data_path = PROJECT_ROOT / "test_data" / "test_data_new_models.json"
+    
+    if test_data_path.exists():
+        try:
+            with open(test_data_path, 'r') as f:
+                all_samples = json.load(f)
+            
+            if all_samples:
+                # Return a random sample
+                import random
+                sample = random.choice(all_samples)
+                return jsonify({
+                    "success": True,
+                    "sample": sample,
+                    "total_samples": len(all_samples)
+                })
+        except Exception as e:
+            logger.error(f"Error loading test data: {e}")
+    
+    # Fallback: Generate a simple test sample with ALL required features
+    # Use selected_features to create a sample with all required features
+    sample_features = {}
+    if selected_features:
+        for feat in selected_features:  # ALL features, not just first 50
+            if "Port" in feat:
+                sample_features[feat] = 80
+            elif "Duration" in feat:
+                sample_features[feat] = 1000
+            elif "Fwd Packets" in feat or "Forward Packets" in feat:
+                sample_features[feat] = 10000
+            elif "Bwd Packets" in feat or "Backward Packets" in feat:
+                sample_features[feat] = 0
+            elif "Bytes/s" in feat or "Bytes per" in feat or "Bytes" in feat:
+                sample_features[feat] = 15000000
+            elif "Packets/s" in feat or "Packets per" in feat:
+                sample_features[feat] = 10000
+            elif "IAT" in feat or "Inter Arrival" in feat:
+                sample_features[feat] = 0.05
+            elif "Active" in feat:
+                sample_features[feat] = 1000
+            elif "Idle" in feat:
+                sample_features[feat] = 0
+            elif "Flag" in feat or "Flags" in feat:
+                sample_features[feat] = 0
+            elif "Length" in feat:
+                sample_features[feat] = 1500
+            elif "Mean" in feat or "Avg" in feat or "Average" in feat:
+                sample_features[feat] = 1000
+            elif "Std" in feat or "Variance" in feat:
+                sample_features[feat] = 100
+            elif "Max" in feat:
+                sample_features[feat] = 1500
+            elif "Min" in feat:
+                sample_features[feat] = 0
+            else:
+                # Default value for any other features
+                sample_features[feat] = 100
+    
+    return jsonify({
+        "success": True,
+        "sample": {
+            "features": sample_features,
+            "source_ip": "192.168.1.100",
+            "attack_type": "test_sample"
+        },
+        "total_samples": 1,
+        "note": "Generated sample (test data file not available)"
+    })
+
+
 @app.route("/predict", methods=["POST"])
 @require_api_key(["read", "write"])
 def predict():
@@ -220,6 +297,7 @@ def predict():
 
         for model_name, model in models.items():
             model_start = time.time()
+            prob_value = None  # Initialize prob_value
             try:
                 if hasattr(model, "predict_proba"):
                     prob = safe_model_prediction(model, X, model_name)
@@ -227,11 +305,17 @@ def predict():
                     predictions[model_name] = prob_value
                     threat_scores.append(prob_value)
                 else:
-                    # For anomaly detection
+                    # For anomaly detection (Isolation Forest)
+                    # Isolation Forest returns -1 for anomalies, 1 for normal
                     pred = safe_model_prediction(model, X, model_name)
-                    score = 1.0 if int(pred[0]) == -1 else 0.0
+                    # Convert: -1 (anomaly) -> 1.0 (high threat), 1 (normal) -> 0.0 (low threat)
+                    if isinstance(pred, np.ndarray):
+                        score = 1.0 if int(pred[0]) == -1 else 0.0
+                    else:
+                        score = 1.0 if int(pred) == -1 else 0.0
                     predictions[model_name] = score
                     threat_scores.append(score)
+                    prob_value = score  # For consistency with other models
 
                 # Update model performance metrics
                 model_time = (time.time() - model_start) * 1000
@@ -240,7 +324,8 @@ def predict():
                     stats["predictions"] += 1
                     # Running average for confidence
                     n = stats["predictions"]
-                    stats["avg_confidence"] = ((stats["avg_confidence"] * (n-1)) + prob_value) / n if hasattr(model, "predict_proba") else stats["avg_confidence"]
+                    if prob_value is not None:
+                        stats["avg_confidence"] = ((stats["avg_confidence"] * (n-1)) + prob_value) / n
                     # Running average for time
                     stats["avg_time_ms"] = ((stats["avg_time_ms"] * (n-1)) + model_time) / n
                     stats["status"] = "healthy"

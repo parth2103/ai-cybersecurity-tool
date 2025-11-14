@@ -29,14 +29,17 @@ class DataValidator:
     def _load_feature_names(self) -> List[str]:
         """Load expected feature names"""
         try:
+            # Priority: New models > Old models
             feat_paths = [
-                self.models_dir / "selected_features.pkl",
-                self.models_dir / "feature_names.pkl",
+                self.models_dir / "feature_names_new_datasets.pkl",  # New features (IoT-IDAD + CICAPT)
+                self.models_dir / "selected_features.pkl",  # Fallback
+                self.models_dir / "feature_names.pkl",  # Fallback (old CICIDS2017)
             ]
             for path in feat_paths:
                 if path.exists():
                     features = joblib.load(path)
-                    logger.info(f"Loaded {len(features)} feature names from {path}")
+                    feat_type = "NEW" if "new_datasets" in str(path) else "OLD"
+                    logger.info(f"Loaded {len(features)} feature names from {path} [{feat_type}]")
                     return list(features)
             logger.warning("No feature names found, using empty list")
             return []
@@ -47,11 +50,17 @@ class DataValidator:
     def _load_scaler(self):
         """Load the scaler for validation"""
         try:
-            scaler_path = self.models_dir / "scaler.pkl"
-            if scaler_path.exists():
-                scaler = joblib.load(scaler_path)
-                logger.info("Loaded scaler for validation")
-                return scaler
+            # Priority: New scaler > Old scaler
+            scaler_paths = [
+                self.models_dir / "scaler_new_datasets.pkl",  # New scaler
+                self.models_dir / "scaler.pkl",  # Fallback (old scaler)
+            ]
+            for scaler_path in scaler_paths:
+                if scaler_path.exists():
+                    scaler = joblib.load(scaler_path)
+                    scaler_type = "NEW" if "new_datasets" in str(scaler_path) else "OLD"
+                    logger.info(f"Loaded scaler for validation from {scaler_path} [{scaler_type}]")
+                    return scaler
             return None
         except Exception as e:
             logger.error(f"Failed to load scaler: {e}")
@@ -200,13 +209,29 @@ class DataValidator:
         validated_features = {}
         errors = []
 
-        # Check required features
+        # Note: Missing features are allowed - they will be filled with 0 in prepare_model_input
+        # Only log a warning if many features are missing (not an error)
         if self.feature_names:
             missing_features = [f for f in self.feature_names if f not in features]
             if missing_features:
-                errors.append(f"Missing required features: {missing_features}")
+                missing_count = len(missing_features)
+                total_count = len(self.feature_names)
+                missing_pct = (missing_count / total_count) * 100
+                
+                # Only warn if more than 50% of features are missing
+                if missing_pct > 50:
+                    logger.warning(
+                        f"Many features missing ({missing_count}/{total_count}, {missing_pct:.1f}%). "
+                        f"Missing features will be filled with 0. "
+                        f"First 10 missing: {missing_features[:10]}"
+                    )
+                else:
+                    logger.debug(
+                        f"Some features missing ({missing_count}/{total_count}). "
+                        f"Missing features will be filled with 0."
+                    )
 
-        # Validate and sanitize all features
+        # Validate and sanitize all provided features
         for key, value in features.items():
             try:
                 # Sanitize key

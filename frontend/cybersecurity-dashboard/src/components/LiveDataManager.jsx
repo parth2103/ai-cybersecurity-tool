@@ -103,94 +103,152 @@ const LiveDataManager = ({ onStatsUpdate, onAlertsUpdate, onSystemUpdate }) => {
     };
   }, []); // Empty dependency array to prevent infinite loops
 
+  // Generate test features dynamically based on API requirements
+  const generateTestFeatures = async (attackType = 'attack') => {
+    // First, try to get a test data sample from the API
+    let features = {};
+    
+    try {
+      // Try to get a test data sample from API
+      const testSampleResponse = await axios.get(`${API_URL}/test-data/sample`, {
+        headers: { 'X-API-Key': API_KEY }
+      });
+      
+      if (testSampleResponse.data.success && testSampleResponse.data.sample) {
+        // Use the sample from API (has all required features)
+        features = testSampleResponse.data.sample.features;
+        console.log('✅ Using test data sample from API');
+        return features;
+      }
+    } catch (e) {
+      console.log('Could not get test data sample from API, generating default features');
+    }
+    
+    // Fallback: Generate comprehensive feature set
+    try {
+      // Try to get system info
+      const sysInfo = await axios.get(`${API_URL}/system/info`, {
+        headers: { 'X-API-Key': API_KEY }
+      });
+    } catch (e) {
+      console.log('Could not get system info');
+    }
+    
+    // Generate comprehensive test features (covers both old and new feature sets)
+    // This includes common features from CICIDS2017 and new datasets
+    const baseFeatures = {
+      // Core network features (common to both old and new)
+      "Destination Port": attackType === 'attack' ? 80 : 443,
+      "Flow Duration": attackType === 'attack' ? 1000 : 100000,
+      "Total Fwd Packets": attackType === 'attack' ? 50000 : 10,
+      "Total Backward Packets": attackType === 'attack' ? 0 : 10,
+      "Total Length of Fwd Packets": attackType === 'attack' ? 5000000 : 2000,
+      "Total Length of Bwd Packets": attackType === 'attack' ? 0 : 1800,
+      "Fwd Packet Length Max": attackType === 'attack' ? 1500 : 300,
+      "Fwd Packet Length Min": attackType === 'attack' ? 64 : 20,
+      "Fwd Packet Length Mean": attackType === 'attack' ? 100 : 100,
+      "Fwd Packet Length Std": attackType === 'attack' ? 0 : 50,
+      "Bwd Packet Length Max": attackType === 'attack' ? 0 : 300,
+      "Bwd Packet Length Min": attackType === 'attack' ? 0 : 20,
+      "Bwd Packet Length Mean": attackType === 'attack' ? 0 : 100,
+      "Bwd Packet Length Std": attackType === 'attack' ? 0 : 50,
+      "Flow Bytes/s": attackType === 'attack' ? 100000000 : 2000,
+      "Flow Packets/s": attackType === 'attack' ? 1000000 : 20,
+      "Flow IAT Mean": attackType === 'attack' ? 0.05 : 50,
+      "Flow IAT Std": attackType === 'attack' ? 0.01 : 10,
+      "Flow IAT Max": attackType === 'attack' ? 0.1 : 100,
+      "Flow IAT Min": attackType === 'attack' ? 0.01 : 10,
+      "Fwd IAT Total": attackType === 'attack' ? 50 : 1000,
+      "Fwd IAT Mean": attackType === 'attack' ? 0.001 : 10,
+      "Fwd IAT Std": attackType === 'attack' ? 0.0001 : 5,
+      "Fwd IAT Max": attackType === 'attack' ? 0.002 : 20,
+      "Fwd IAT Min": attackType === 'attack' ? 0.0001 : 1,
+      "Bwd IAT Total": attackType === 'attack' ? 0 : 1000,
+      "Bwd IAT Mean": attackType === 'attack' ? 0 : 10,
+      "Bwd IAT Std": attackType === 'attack' ? 0 : 5,
+      "Bwd IAT Max": attackType === 'attack' ? 0 : 20,
+      "Bwd IAT Min": attackType === 'attack' ? 0 : 1,
+      "Fwd PSH Flags": 0,
+      "Bwd PSH Flags": 0,
+      "Fwd URG Flags": 0,
+      "Bwd URG Flags": 0,
+      "Fwd Header Length": 20,
+      "Bwd Header Length": attackType === 'attack' ? 0 : 20,
+      "Fwd Packets/s": attackType === 'attack' ? 1000000 : 20,
+      "Bwd Packets/s": attackType === 'attack' ? 0 : 20,
+      "Min Packet Length": 64,
+      "Max Packet Length": 1500,
+      "Packet Length Mean": attackType === 'attack' ? 100 : 100,
+      "Packet Length Std": attackType === 'attack' ? 0 : 50,
+      "Packet Length Variance": attackType === 'attack' ? 0 : 2500,
+      "FIN Flag Count": 0,
+      "SYN Flag Count": attackType === 'attack' ? 50000 : 1,
+      "RST Flag Count": 0,
+      "PSH Flag Count": 0,
+      "ACK Flag Count": attackType === 'attack' ? 0 : 10,
+      "URG Flag Count": 0,
+      "CWE Flag Count": 0,
+      "ECE Flag Count": 0,
+      "Down/Up Ratio": attackType === 'attack' ? 0.002 : 1,
+      "Average Packet Size": attackType === 'attack' ? 100 : 100,
+      "Avg Fwd Segment Size": attackType === 'attack' ? 100 : 100,
+      "Avg Bwd Segment Size": attackType === 'attack' ? 0 : 100,
+      "Fwd Header Length.1": 20,
+      "Fwd Avg Bytes/Bulk": 0,
+      "Fwd Avg Packets/Bulk": 0,
+      "Fwd Avg Bulk Rate": 0,
+      "Bwd Avg Bytes/Bulk": 0,
+      "Bwd Avg Packets/Bulk": 0,
+      "Bwd Avg Bulk Rate": 0,
+      "Subflow Fwd Packets": attackType === 'attack' ? 50000 : 10,
+      "Subflow Fwd Bytes": attackType === 'attack' ? 5000000 : 2000,
+      "Subflow Bwd Packets": attackType === 'attack' ? 0 : 10,
+      "Subflow Bwd Bytes": attackType === 'attack' ? 0 : 1800,
+      "Init_Win_bytes_forward": 65535,
+      "Init_Win_bytes_backward": attackType === 'attack' ? 0 : 65535,
+      "act_data_pkt_fwd": 0,
+      "min_seg_size_forward": 0,
+      "Active Mean": attackType === 'attack' ? 0 : 1000,
+      "Active Std": 0,
+      "Active Max": attackType === 'attack' ? 0 : 2000,
+      "Active Min": 0,
+      "Idle Mean": attackType === 'attack' ? 0 : 100,
+      "Idle Std": 0,
+      "Idle Max": attackType === 'attack' ? 0 : 200,
+      "Idle Min": 0
+    };
+    
+    // Add common new dataset features (if they exist in new feature set)
+    // These will be filled by API if missing, but we include common ones
+    const newFeatures = {
+      "ACK Flag Count": attackType === 'attack' ? 0 : 10,
+      "ARP": 0,
+      "AVG": attackType === 'attack' ? 100 : 100,
+      "Bwd Bulk Rate Avg": 0,
+      "Bwd Bytes/Bulk Avg": 0,
+      "Bwd Packets/Bulk Avg": 0,
+    };
+    
+    // Merge all features
+    features = { ...baseFeatures, ...newFeatures };
+    
+    // Fill any remaining common feature patterns with defaults
+    // The API will handle missing features by filling with 0
+    return features;
+  };
+
   // Send test data to trigger alerts
   const sendTestData = async () => {
     console.log('🧪 Sending test data...');
     setIsTestSending(true);
     try {
+      // Generate test features dynamically
+      const testFeatures = await generateTestFeatures('attack');
+      
       const testData = {
-        features: {
-          "Destination Port": 80,
-          "Flow Duration": 50,
-          "Total Fwd Packets": 50000,
-          "Total Backward Packets": 100,
-          "Total Length of Fwd Packets": 5000000,
-          "Total Length of Bwd Packets": 10000,
-          "Fwd Packet Length Max": 1500,
-          "Fwd Packet Length Min": 64,
-          "Fwd Packet Length Mean": 100,
-          "Fwd Packet Length Std": 200,
-          "Bwd Packet Length Max": 100,
-          "Bwd Packet Length Min": 0,
-          "Bwd Packet Length Mean": 10,
-          "Bwd Packet Length Std": 20,
-          "Flow Bytes/s": 100000000,
-          "Flow Packets/s": 1000000,
-          "Flow IAT Mean": 0.05,
-          "Flow IAT Std": 0.01,
-          "Flow IAT Max": 0.1,
-          "Flow IAT Min": 0.01,
-          "Fwd IAT Total": 50,
-          "Fwd IAT Mean": 0.001,
-          "Fwd IAT Std": 0.0001,
-          "Fwd IAT Max": 0.002,
-          "Fwd IAT Min": 0.0001,
-          "Bwd IAT Total": 100,
-          "Bwd IAT Mean": 1,
-          "Bwd IAT Std": 0.5,
-          "Bwd IAT Max": 2,
-          "Bwd IAT Min": 0.5,
-          "Fwd PSH Flags": 0,
-          "Bwd PSH Flags": 0,
-          "Fwd URG Flags": 0,
-          "Bwd URG Flags": 0,
-          "Fwd Header Length": 20,
-          "Bwd Header Length": 20,
-          "Fwd Packets/s": 1000000,
-          "Bwd Packets/s": 1000,
-          "Min Packet Length": 64,
-          "Max Packet Length": 1500,
-          "Packet Length Mean": 100,
-          "Packet Length Std": 200,
-          "Packet Length Variance": 40000,
-          "FIN Flag Count": 0,
-          "SYN Flag Count": 50000,
-          "RST Flag Count": 0,
-          "PSH Flag Count": 0,
-          "ACK Flag Count": 100,
-          "URG Flag Count": 0,
-          "CWE Flag Count": 0,
-          "ECE Flag Count": 0,
-          "Down/Up Ratio": 0.002,
-          "Average Packet Size": 100,
-          "Avg Fwd Segment Size": 100,
-          "Avg Bwd Segment Size": 10,
-          "Fwd Header Length.1": 20,
-          "Fwd Avg Bytes/Bulk": 0,
-          "Fwd Avg Packets/Bulk": 0,
-          "Fwd Avg Bulk Rate": 0,
-          "Bwd Avg Bytes/Bulk": 0,
-          "Bwd Avg Packets/Bulk": 0,
-          "Bwd Avg Bulk Rate": 0,
-          "Subflow Fwd Packets": 50000,
-          "Subflow Fwd Bytes": 5000000,
-          "Subflow Bwd Packets": 100,
-          "Subflow Bwd Bytes": 10000,
-          "Init_Win_bytes_forward": 65535,
-          "Init_Win_bytes_backward": 0,
-          "act_data_pkt_fwd": 0,
-          "min_seg_size_forward": 0,
-          "Active Mean": 0,
-          "Active Std": 0,
-          "Active Max": 0,
-          "Active Min": 0,
-          "Idle Mean": 0,
-          "Idle Std": 0,
-          "Idle Max": 0,
-          "Idle Min": 0
-        },
+        features: testFeatures,
         source_ip: "192.168.1.100",
-        attack_type: "DDoS_Test"
+        attack_type: "DDoS_Test_New_Models"
       };
 
       const response = await axios.post(`${API_URL}/predict`, testData, {
