@@ -114,71 +114,62 @@ const ModelPerformanceMonitor = ({ apiBaseUrl, apiKey }) => {
 
   return (
     <Box>
-      <Typography variant="subtitle1" gutterBottom sx={{ display: 'flex', alignItems: 'center', fontSize: '1rem' }}>
-        <ShowChart sx={{ mr: 1, color: 'primary.main', fontSize: 20 }} />
+      <Typography variant="subtitle2" gutterBottom sx={{ display: 'flex', alignItems: 'center', fontSize: '0.85rem', mb: 1 }}>
+        <ShowChart sx={{ mr: 0.5, color: 'primary.main', fontSize: 16 }} />
         Live Model Performance
       </Typography>
 
       {/* Summary Cards */}
       <Grid container spacing={1.5} sx={{ mb: 1.5 }}>
-        <Grid item xs={12} sm={4}>
+        <Grid item xs={4}>
           <Card
             sx={{
-              height: 80,
+              height: 70,
               background: 'linear-gradient(135deg, rgba(33, 150, 243, 0.1) 0%, rgba(33, 150, 243, 0.05) 100%)',
               border: `1px solid rgba(33, 150, 243, 0.2)`,
             }}
           >
-            <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 } }}>
-              <Box display="flex" alignItems="center" mb={0.5}>
-                <Memory sx={{ mr: 0.5, color: 'primary.main', fontSize: 18 }} />
-                <Typography color="text.secondary" variant="caption" sx={{ fontSize: '0.7rem' }}>
-                  Total Predictions
-                </Typography>
-              </Box>
-              <Typography variant="h5" sx={{ fontWeight: 700, color: 'primary.main', fontSize: '1.5rem' }}>
+            <CardContent sx={{ p: 1, '&:last-child': { pb: 1 } }}>
+              <Typography color="text.secondary" variant="caption" sx={{ fontSize: '0.7rem' }}>
+                Total Predictions
+              </Typography>
+              <Typography variant="h6" sx={{ fontWeight: 700, color: 'primary.main', fontSize: '1.1rem', lineHeight: 1.2 }}>
                 {performanceData.total_predictions.toLocaleString()}
               </Typography>
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={12} sm={4}>
+        <Grid item xs={4}>
           <Card
             sx={{
-              height: 80,
+              height: 70,
               background: 'linear-gradient(135deg, rgba(76, 175, 80, 0.1) 0%, rgba(76, 175, 80, 0.05) 100%)',
               border: `1px solid rgba(76, 175, 80, 0.2)`,
             }}
           >
-            <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 } }}>
-              <Box display="flex" alignItems="center" mb={0.5}>
-                <Speed sx={{ mr: 0.5, color: 'success.main', fontSize: 18 }} />
-                <Typography color="text.secondary" variant="caption" sx={{ fontSize: '0.7rem' }}>
-                  Healthy Models
-                </Typography>
-              </Box>
-              <Typography variant="h5" sx={{ fontWeight: 700, color: 'success.main', fontSize: '1.5rem' }}>
-                {performanceData.healthy_models} / {performanceData.total_models}
+            <CardContent sx={{ p: 1, '&:last-child': { pb: 1 } }}>
+              <Typography color="text.secondary" variant="caption" sx={{ fontSize: '0.7rem' }}>
+                Healthy Models
+              </Typography>
+              <Typography variant="h6" sx={{ fontWeight: 700, color: 'success.main', fontSize: '1.1rem', lineHeight: 1.2 }}>
+                {performanceData.healthy_models}/{performanceData.total_models}
               </Typography>
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={12} sm={4}>
+        <Grid item xs={4}>
           <Card
             sx={{
-              height: 80,
+              height: 70,
               background: 'linear-gradient(135deg, rgba(255, 152, 0, 0.1) 0%, rgba(255, 152, 0, 0.05) 100%)',
               border: `1px solid rgba(255, 152, 0, 0.2)`,
             }}
           >
-            <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 } }}>
-              <Box display="flex" alignItems="center" mb={0.5}>
-                <Stars sx={{ mr: 0.5, color: 'warning.main', fontSize: 18 }} />
-                <Typography color="text.secondary" variant="caption" sx={{ fontSize: '0.7rem' }}>
-                  Active Models
-                </Typography>
-              </Box>
-              <Typography variant="h5" sx={{ fontWeight: 700, color: 'warning.main', fontSize: '1.5rem' }}>
+            <CardContent sx={{ p: 1, '&:last-child': { pb: 1 } }}>
+              <Typography color="text.secondary" variant="caption" sx={{ fontSize: '0.7rem' }}>
+                Active Models
+              </Typography>
+              <Typography variant="h6" sx={{ fontWeight: 700, color: 'warning.main', fontSize: '1.1rem', lineHeight: 1.2 }}>
                 {Object.values(performanceData.models).filter(m => m.available).length}
               </Typography>
             </CardContent>
@@ -186,13 +177,13 @@ const ModelPerformanceMonitor = ({ apiBaseUrl, apiKey }) => {
         </Grid>
       </Grid>
 
-      {/* Model Status Cards */}
-      <Grid container spacing={1.5} sx={{ mb: 1.5 }}>
+      {/* Model Status Cards - Compact */}
+      <Grid container spacing={1} sx={{ mb: 1 }}>
         {Object.entries(performanceData.models).map(([name, data]) => (
           <Grid item xs={12} sm={6} md={3} key={name}>
             <Card
               sx={{
-                height: 150,
+                height: 120,
                 position: 'relative',
                 background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.02) 0%, rgba(255, 255, 255, 0.01) 100%)',
                 border: `2px solid ${getStatusBorderColor(data.status)}`,
@@ -214,7 +205,7 @@ const ModelPerformanceMonitor = ({ apiBaseUrl, apiKey }) => {
             >
               <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 } }}>
                 <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
-                  <Typography variant="body2" fontWeight={600} sx={{ fontSize: '0.85rem' }}>
+                  <Typography variant="body2" fontWeight={600} sx={{ fontSize: '0.8rem' }}>
                     {getModelDisplayName(name)}
                   </Typography>
                   <Chip
@@ -224,28 +215,26 @@ const ModelPerformanceMonitor = ({ apiBaseUrl, apiKey }) => {
                     sx={{ fontWeight: 600, height: 20, fontSize: '0.65rem' }}
                   />
                 </Box>
-                <Box sx={{ mb: 0.5 }}>
-                  <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.65rem' }}>
+                <Box sx={{ mb: 0.75 }}>
+                  <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem', display: 'block', mb: 0.25 }}>
                     Predictions: <strong>{data.predictions.toLocaleString()}</strong>
                   </Typography>
-                </Box>
-                <Box sx={{ mb: 0.5 }}>
-                  <LinearProgress
-                    variant="determinate"
-                    value={data.avg_confidence * 100}
-                    sx={{
-                      height: 4,
-                      borderRadius: 2,
-                      backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                      '& .MuiLinearProgress-bar': {
-                        backgroundColor: getStatusBorderColor(data.status),
-                      },
-                    }}
-                  />
-                  <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.65rem' }}>
-                    Confidence: {(data.avg_confidence * 100).toFixed(1)}%
+                  <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
+                    Confidence: {(data.avg_confidence * 100).toFixed(1)}% | Time: {data.avg_time_ms.toFixed(1)}ms
                   </Typography>
                 </Box>
+                <LinearProgress
+                  variant="determinate"
+                  value={data.avg_confidence * 100}
+                  sx={{
+                    height: 4,
+                    borderRadius: 2,
+                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                    '& .MuiLinearProgress-bar': {
+                      backgroundColor: getStatusBorderColor(data.status),
+                    },
+                  }}
+                />
                 <Box display="flex" justifyContent="space-between" mt={0.5}>
                   <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.65rem' }}>
                     {data.avg_time_ms.toFixed(2)}ms

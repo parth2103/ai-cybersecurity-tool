@@ -104,6 +104,7 @@ const LiveDashboard = () => {
   const [alerts, setAlerts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [explainFeatures, setExplainFeatures] = useState(null);
 
   // Memoized callback functions to prevent infinite loops
   const handleStatsUpdate = useCallback((newStats) => {
@@ -124,11 +125,18 @@ const LiveDashboard = () => {
     setSystemInfo(newSystemInfo);
   }, []);
 
+  // Handle features ready for explanation
+  const handleFeaturesReady = useCallback((features) => {
+    console.log('📊 Features ready for explanation:', features);
+    setExplainFeatures(features);
+  }, []);
+
   // Live data manager for real-time updates
-  const { isConnected, connectionStatus, sendTestData, isTestSending } = LiveDataManager({
+  const { isConnected, connectionStatus, sendTestData, isTestSending, toggleContinuousSending, isContinuousSending } = LiveDataManager({
     onStatsUpdate: handleStatsUpdate,
     onAlertsUpdate: handleAlertsUpdate,
-    onSystemUpdate: handleSystemUpdate
+    onSystemUpdate: handleSystemUpdate,
+    onFeaturesReady: handleFeaturesReady
   });
 
   const fetchStats = useCallback(async () => {
@@ -231,17 +239,18 @@ const LiveDashboard = () => {
   }
 
   return (
-    <Container maxWidth="xl" sx={{ py: 4 }}>
+    <Container maxWidth="xl" sx={{ py: 1.5, maxHeight: '100vh', overflow: 'auto' }}>
       {/* Header */}
-      <Box mb={4}>
-        <Typography variant="h3" component="h1" gutterBottom sx={{ 
+      <Box mb={1.5}>
+        <Typography variant="h4" component="h1" gutterBottom sx={{ 
           fontWeight: 'bold', 
           background: 'linear-gradient(45deg, #2196F3, #21CBF3)',
           backgroundClip: 'text',
           WebkitBackgroundClip: 'text',
           WebkitTextFillColor: 'transparent',
           textAlign: 'center',
-          mb: 2
+          mb: 1,
+          fontSize: '1.75rem'
         }}>
           🛡️ AI Cybersecurity Dashboard
         </Typography>
@@ -253,8 +262,8 @@ const LiveDashboard = () => {
         )}
       </Box>
 
-      <Grid container spacing={2}>
-        {/* Threat Level Alert Banner */}
+      <Grid container spacing={1.5}>
+        {/* Threat Level Alert Banner - Compact */}
         <Grid item xs={12}>
           <Alert
             severity={stats.current_threat_level === 'Critical' ? 'error' :
@@ -262,9 +271,9 @@ const LiveDashboard = () => {
                     stats.current_threat_level === 'Medium' ? 'warning' : 'success'}
             icon={getThreatIcon(stats.current_threat_level)}
             sx={{
-              borderRadius: 2,
-              borderLeft: `4px solid ${getThreatLevelColor(stats.current_threat_level)}`,
-              py: 0.5,
+              borderRadius: 1.5,
+              borderLeft: `3px solid ${getThreatLevelColor(stats.current_threat_level)}`,
+              py: 0.25,
               background: stats.current_threat_level === 'Critical' || stats.current_threat_level === 'High'
                 ? `linear-gradient(90deg, rgba(244, 67, 54, 0.15) 0%, transparent 100%)`
                 : `linear-gradient(90deg, rgba(76, 175, 80, 0.1) 0%, transparent 100%)`,
@@ -283,7 +292,7 @@ const LiveDashboard = () => {
               },
             }}
           >
-            <Typography variant="h6" sx={{ fontWeight: 600 }}>
+            <Typography variant="body1" sx={{ fontWeight: 600, fontSize: '0.9rem' }}>
               {stats.current_threat_level === 'Critical' && '🚨 CRITICAL THREAT DETECTED!'}
               {stats.current_threat_level === 'High' && '⚠️ HIGH THREAT DETECTED'}
               {stats.current_threat_level === 'Medium' && '⚡ MEDIUM THREAT DETECTED'}
@@ -298,19 +307,20 @@ const LiveDashboard = () => {
           <Alert 
             severity={isConnected ? 'success' : 'warning'}
             sx={{ 
-              mb: 3,
+              mb: 1.5,
+              py: 0.5,
               background: isConnected 
                 ? 'linear-gradient(135deg, rgba(76, 175, 80, 0.1) 0%, rgba(21, 26, 53, 0.9) 100%)'
                 : 'linear-gradient(135deg, rgba(255, 152, 0, 0.1) 0%, rgba(21, 26, 53, 0.9) 100%)',
               border: isConnected 
                 ? '1px solid rgba(76, 175, 80, 0.3)'
                 : '1px solid rgba(255, 152, 0, 0.3)',
-              borderRadius: 2
+              borderRadius: 1.5
             }}
           >
-            <Box display="flex" alignItems="center" gap={1}>
+            <Box display="flex" alignItems="center" gap={1} flexWrap="wrap">
               {isConnected ? <CheckCircle /> : <Warning />}
-              <Typography variant="h6">
+              <Typography variant="body1" sx={{ fontSize: '0.95rem' }}>
                 Live Data: {connectionStatus}
               </Typography>
               <Chip 
@@ -320,13 +330,26 @@ const LiveDashboard = () => {
                 sx={{ ml: 1 }}
               />
               <Button
-                variant="outlined"
+                variant={isContinuousSending ? "contained" : "outlined"}
                 size="small"
-                onClick={sendTestData}
+                onClick={toggleContinuousSending}
                 disabled={isTestSending}
-                sx={{ ml: 2 }}
+                color={isContinuousSending ? "error" : "primary"}
+                sx={{ 
+                  ml: 2,
+                  minWidth: '140px', // Fixed width to prevent layout shift
+                  animation: isContinuousSending ? 'pulse 2s ease-in-out infinite' : 'none',
+                  '@keyframes pulse': {
+                    '0%, 100%': {
+                      boxShadow: '0 0 0 0 rgba(244, 67, 54, 0.7)',
+                    },
+                    '50%': {
+                      boxShadow: '0 0 0 10px rgba(244, 67, 54, 0)',
+                    },
+                  },
+                }}
               >
-                {isTestSending ? "Sending..." : "Send Test Data"}
+                {isTestSending ? "Sending..." : isContinuousSending ? "⏹️ Stop Live Demo" : "▶️ Start Live Demo"}
               </Button>
             </Box>
           </Alert>
@@ -379,7 +402,7 @@ const LiveDashboard = () => {
             elevation={3}
             sx={{
               p: 2,
-              height: 280,
+              height: 320,
               background: 'linear-gradient(135deg, rgba(21, 26, 53, 0.8) 0%, rgba(26, 32, 64, 0.9) 100%)',
               backdropFilter: 'blur(10px)',
               border: '1px solid rgba(33, 150, 243, 0.3)',
@@ -397,15 +420,16 @@ const LiveDashboard = () => {
               sx={{
                 display: 'flex',
                 alignItems: 'center',
-                fontSize: '1rem',
+                fontSize: '0.95rem',
                 fontWeight: 600,
                 textShadow: '0 0 10px rgba(33, 150, 243, 0.5)',
+                mb: 1
               }}
             >
-              <Speed sx={{ mr: 1, color: 'primary.main', fontSize: 20, filter: 'drop-shadow(0 0 6px rgba(33, 150, 243, 0.6))' }} />
+              <Speed sx={{ mr: 1, color: 'primary.main', fontSize: 18 }} />
               Real-time Threat Scores
             </Typography>
-            <ResponsiveContainer width="100%" height={230}>
+            <ResponsiveContainer width="100%" height={260}>
               <AreaChart data={realtimeData}>
                 <defs>
                   <linearGradient id="colorThreat" x1="0" y1="0" x2="0" y2="1">
@@ -452,7 +476,7 @@ const LiveDashboard = () => {
             elevation={3}
             sx={{
               p: 2,
-              height: 280,
+              height: 320,
               background: 'linear-gradient(135deg, rgba(21, 26, 53, 0.8) 0%, rgba(26, 32, 64, 0.9) 100%)',
               backdropFilter: 'blur(10px)',
               border: '1px solid rgba(33, 150, 243, 0.3)',
@@ -465,15 +489,16 @@ const LiveDashboard = () => {
               sx={{
                 display: 'flex',
                 alignItems: 'center',
-                fontSize: '1rem',
+                fontSize: '0.95rem',
                 fontWeight: 600,
                 textShadow: '0 0 10px rgba(33, 150, 243, 0.5)',
+                mb: 1
               }}
             >
-              <Shield sx={{ mr: 1, color: 'primary.main', fontSize: 20 }} />
+              <Shield sx={{ mr: 1, color: 'primary.main', fontSize: 18 }} />
               Threat Distribution
             </Typography>
-            <ResponsiveContainer width="100%" height={230}>
+            <ResponsiveContainer width="100%" height={260}>
               <PieChart>
                 <Pie
                   data={pieData}
@@ -501,65 +526,94 @@ const LiveDashboard = () => {
           </Paper>
         </Grid>
 
-        {/* Model Performance Monitor */}
+        {/* Model Performance Monitor and Feature Attention - Side by Side */}
         <Grid item xs={12} md={6}>
-          <ModelPerformanceMonitor 
-            apiBaseUrl={API_URL} 
-            apiKey={API_KEY} 
-          />
-        </Grid>
-
-        {/* Feature Attention Visualizer */}
-        <Grid item xs={12} md={6}>
-          <AttentionVisualizer 
-            apiBaseUrl={API_URL} 
-            apiKey={API_KEY} 
-          />
-        </Grid>
-
-        {/* Recent Alerts */}
-        <Grid item xs={12}>
           <Paper
             elevation={3}
             sx={{
               p: 2,
+              height: 340,
               background: 'linear-gradient(135deg, rgba(21, 26, 53, 0.8) 0%, rgba(26, 32, 64, 0.9) 100%)',
               backdropFilter: 'blur(10px)',
               border: '1px solid rgba(33, 150, 243, 0.3)',
               boxShadow: '0 8px 32px rgba(33, 150, 243, 0.15), inset 0 0 30px rgba(33, 150, 243, 0.05)',
+              overflow: 'auto'
+            }}
+          >
+            <ModelPerformanceMonitor 
+              apiBaseUrl={API_URL} 
+              apiKey={API_KEY} 
+            />
+          </Paper>
+        </Grid>
+
+        {/* Feature Attention Visualizer */}
+        <Grid item xs={12} md={6}>
+          <Paper
+            elevation={3}
+            sx={{
+              p: 2,
+              height: 340,
+              background: 'linear-gradient(135deg, rgba(21, 26, 53, 0.8) 0%, rgba(26, 32, 64, 0.9) 100%)',
+              backdropFilter: 'blur(10px)',
+              border: '1px solid rgba(33, 150, 243, 0.3)',
+              boxShadow: '0 8px 32px rgba(33, 150, 243, 0.15), inset 0 0 30px rgba(33, 150, 243, 0.05)',
+              overflow: 'auto'
+            }}
+          >
+            <AttentionVisualizer 
+              apiBaseUrl={API_URL} 
+              apiKey={API_KEY}
+              features={explainFeatures}
+            />
+          </Paper>
+        </Grid>
+
+        {/* Recent Alerts - Compact */}
+        <Grid item xs={12}>
+          <Paper
+            elevation={3}
+            sx={{
+              p: 1.5,
+              maxHeight: 120,
+              background: 'linear-gradient(135deg, rgba(21, 26, 53, 0.8) 0%, rgba(26, 32, 64, 0.9) 100%)',
+              backdropFilter: 'blur(10px)',
+              border: '1px solid rgba(33, 150, 243, 0.3)',
+              boxShadow: '0 8px 32px rgba(33, 150, 243, 0.15), inset 0 0 30px rgba(33, 150, 243, 0.05)',
+              overflow: 'auto'
             }}
           >
             <Typography
-              variant="subtitle1"
+              variant="subtitle2"
               gutterBottom
               sx={{
                 display: 'flex',
                 alignItems: 'center',
-                fontSize: '1rem',
+                fontSize: '0.85rem',
                 fontWeight: 600,
                 textShadow: '0 0 10px rgba(33, 150, 243, 0.5)',
-                mb: 2
+                mb: 1
               }}
             >
-              <Warning sx={{ mr: 1, color: 'primary.main', fontSize: 20 }} />
+              <Warning sx={{ mr: 0.5, color: 'primary.main', fontSize: 16 }} />
               Recent Alerts
             </Typography>
             {alerts.length > 0 ? (
               <Box>
-                {alerts.slice(0, 5).map((alert, index) => (
+                {alerts.slice(0, 3).map((alert, index) => (
                   <Alert
                     key={index}
-                    severity={alert.severity}
-                    sx={{ mb: 1 }}
+                    severity={alert.severity || 'info'}
+                    sx={{ mb: 0.5, py: 0.5 }}
                   >
-                    <Typography variant="body2">
-                      <strong>{alert.timestamp}:</strong> {alert.message}
+                    <Typography variant="caption" sx={{ fontSize: '0.7rem' }}>
+                      <strong>{new Date(alert.timestamp).toLocaleTimeString()}:</strong> {alert.message || alert.attack_type || 'Threat detected'}
                     </Typography>
                   </Alert>
                 ))}
               </Box>
             ) : (
-              <Typography variant="body2" color="text.secondary">
+              <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
                 No recent alerts
               </Typography>
             )}

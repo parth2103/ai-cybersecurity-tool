@@ -113,9 +113,9 @@ const AttentionVisualizer = ({ apiBaseUrl, apiKey, features, title = "Feature At
 
   return (
     <Box>
-      <Box display="flex" alignItems="center" justifyContent="space-between" mb={1}>
-        <Typography variant="subtitle1" sx={{ display: 'flex', alignItems: 'center', fontSize: '1rem' }}>
-          <TrendingUp sx={{ mr: 1, color: 'warning.main', fontSize: 20 }} />
+      <Box display="flex" alignItems="center" justifyContent="space-between" mb={0.75}>
+        <Typography variant="subtitle2" sx={{ display: 'flex', alignItems: 'center', fontSize: '0.85rem' }}>
+          <TrendingUp sx={{ mr: 0.5, color: 'warning.main', fontSize: 16 }} />
           {title}
         </Typography>
         {explanation && explanation.threat_level && (
@@ -126,8 +126,8 @@ const AttentionVisualizer = ({ apiBaseUrl, apiKey, features, title = "Feature At
               backgroundColor: getThreatLevelColor(explanation.threat_level),
               color: 'white',
               fontWeight: 600,
-              fontSize: '0.7rem',
-              height: 24,
+              fontSize: '0.65rem',
+              height: 20,
             }}
           />
         )}
@@ -136,17 +136,17 @@ const AttentionVisualizer = ({ apiBaseUrl, apiKey, features, title = "Feature At
       {explanation && explanation.explanation && (
         <Paper
           sx={{
-            p: 1.5,
-            mb: 1.5,
+            p: 1,
+            mb: 1,
             background: 'linear-gradient(135deg, rgba(255, 152, 0, 0.05) 0%, rgba(255, 152, 0, 0.02) 100%)',
             border: '1px solid rgba(255, 152, 0, 0.2)',
-            borderRadius: 2,
+            borderRadius: 1.5,
           }}
         >
-          <Typography variant="caption" fontWeight={600} color="warning.main" gutterBottom sx={{ fontSize: '0.75rem' }}>
+          <Typography variant="caption" fontWeight={600} color="warning.main" gutterBottom sx={{ fontSize: '0.65rem' }}>
             Analysis Summary
           </Typography>
-          <Typography variant="caption" sx={{ whiteSpace: 'pre-line', color: 'text.secondary', lineHeight: 1.5, fontSize: '0.7rem', display: 'block' }}>
+          <Typography variant="caption" sx={{ whiteSpace: 'pre-line', color: 'text.secondary', lineHeight: 1.4, fontSize: '0.65rem', display: 'block' }}>
             {explanation.explanation}
           </Typography>
         </Paper>
@@ -154,14 +154,14 @@ const AttentionVisualizer = ({ apiBaseUrl, apiKey, features, title = "Feature At
 
       <Box
         sx={{
-          p: 1.5,
-          borderRadius: 2,
+          p: 1,
+          borderRadius: 1.5,
           background: 'rgba(255, 255, 255, 0.02)',
           border: '1px solid rgba(255, 255, 255, 0.05)',
-          mb: 1.5,
+          mb: 1,
         }}
       >
-        <Typography variant="body2" gutterBottom fontWeight={600} sx={{ fontSize: '0.85rem' }}>
+        <Typography variant="body2" gutterBottom fontWeight={600} sx={{ fontSize: '0.8rem' }}>
           Feature Importance
         </Typography>
         <ResponsiveContainer width="100%" height={180}>
@@ -171,9 +171,9 @@ const AttentionVisualizer = ({ apiBaseUrl, apiKey, features, title = "Feature At
               dataKey="name"
               angle={-45}
               textAnchor="end"
-              height={70}
+              height={50}
               stroke={chartColors.axis}
-              style={{ fontSize: '0.6rem' }}
+              style={{ fontSize: '0.55rem' }}
             />
             <YAxis
               stroke={chartColors.axis}
@@ -214,16 +214,16 @@ const AttentionVisualizer = ({ apiBaseUrl, apiKey, features, title = "Feature At
       {explanation && explanation.top_features && explanation.top_features.length > 0 && (
         <Box
           sx={{
-            p: 1.5,
-            borderRadius: 2,
+            p: 1,
+            borderRadius: 1.5,
             background: 'rgba(255, 255, 255, 0.02)',
             border: '1px solid rgba(255, 255, 255, 0.05)',
           }}
         >
-          <Typography variant="caption" fontWeight={600} gutterBottom sx={{ fontSize: '0.75rem' }}>
+          <Typography variant="caption" fontWeight={600} gutterBottom sx={{ fontSize: '0.65rem' }}>
             Top Features
           </Typography>
-          <Box sx={{ mt: 1 }}>
+          <Box sx={{ mt: 0.5 }}>
             {explanation.top_features.slice(0, 3).map(([feature, score], idx) => (
               <Box
                 key={idx}
